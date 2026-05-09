@@ -1,27 +1,12 @@
-<script setup lang="ts">
-const { t } = useI18n();
-const { riads, fetchRiads } = useRiad();
-
-await fetchRiads();
-
-useSeoMeta({
-  title: "Dar Baraï & Dar Tanawi – Riads à Marrakech",
-  description:
-    "Réservez votre séjour dans nos deux riads d'exception au cœur de la médina de Marrakech.",
-  ogImage: "/images/hero.jpg",
-});
-</script>
-
 <template>
   <!-- Hero -->
   <section
     class="relative h-screen min-h-[600px] flex items-center justify-center text-white overflow-hidden"
   >
-    <NuxtImg
-      src="/images/hero.jpg"
-      alt="Riad Marrakech"
+    <img
+      src="https://images.unsplash.com/photo-1539768942893-daf53e448371?w=1920&q=85"
+      :alt="t('home.hero_title')"
       class="absolute inset-0 w-full h-full object-cover"
-      preload
     />
     <div class="absolute inset-0 bg-black/40" />
     <div class="relative z-10 text-center px-4 max-w-3xl mx-auto">
@@ -47,20 +32,63 @@ useSeoMeta({
 
   <!-- Nos riads -->
   <section class="py-20 px-4 max-w-7xl mx-auto">
-    <h2 class="section-title text-center mb-16">Nos Riads</h2>
+    <h2 class="section-title text-center mb-16">
+      {{ t("home.riads_section_title") }}
+    </h2>
     <div class="grid md:grid-cols-2 gap-10">
       <RiadCard v-for="riad in riads" :key="riad.id" :riad="riad" />
     </div>
   </section>
 
+  <!-- Localisation -->
+  <section class="py-20 px-4 max-w-7xl mx-auto">
+    <h2 class="section-title text-center mb-10">
+      {{ t("home.location_title") }}
+    </h2>
+    <ClientOnly>
+      <div class="h-[420px] rounded-2xl overflow-hidden shadow-lg">
+        <MapView
+          :pins="[
+            {
+              lat: 31.6166,
+              lng: -7.9878,
+              label: 'Dar Baraï',
+              color: '#c0704a',
+            },
+            {
+              lat: 31.6172,
+              lng: -7.9885,
+              label: 'Dar Tanawi',
+              color: '#6b7c4e',
+            },
+          ]"
+          :zoom="16"
+        />
+      </div>
+      <template #fallback>
+        <div class="h-[420px] rounded-2xl bg-sand-100 animate-pulse" />
+      </template>
+    </ClientOnly>
+  </section>
+
   <!-- Expériences -->
   <section class="py-20 bg-sand-50 px-4">
     <div class="max-w-7xl mx-auto text-center">
-      <h2 class="section-title mb-4">L'art de vivre marocain</h2>
+      <h2 class="section-title mb-4">{{ t("home.experiences_title") }}</h2>
       <p class="text-stone-600 text-lg max-w-2xl mx-auto">
-        Piscine, hammam, petit-déjeuner marocain, excursions — nous prenons soin
-        de chaque détail pour un séjour inoubliable.
+        {{ t("home.experiences_subtitle") }}
       </p>
     </div>
   </section>
 </template>
+
+<script setup lang="ts">
+const { t } = useI18n();
+const { riads, fetchRiads } = useRiad();
+await useAsyncData("riads-home", () => fetchRiads());
+
+useSeoMeta({
+  title: t("seo.home_title"),
+  description: t("seo.home_description"),
+});
+</script>

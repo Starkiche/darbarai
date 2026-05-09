@@ -1,17 +1,32 @@
-<script setup lang="ts">
-// Callback OAuth – Supabase gère la session automatiquement via @nuxtjs/supabase
-// Cette page est le point de redirection post-OAuth Google
-definePageMeta({ layout: false });
-
-onMounted(async () => {
-  // Le module @nuxtjs/supabase échange le code PKCE automatiquement
-  // On attend juste que la session soit prête puis on redirige
-  await navigateTo("/account", { replace: true });
-});
-</script>
-
 <template>
   <div class="min-h-screen flex items-center justify-center">
     <p class="text-stone-500">Connexion en cours…</p>
   </div>
 </template>
+
+<script setup lang="ts">
+definePageMeta({ layout: false });
+
+onMounted(() => {
+  const supabase = useSupabaseClient();
+
+  // Supabase émet PASSWORD_RECOVERY quand le lien de reset est utilisé.
+  // Dans tous les autres cas (OAuth, magic link, confirm) → /account.
+  const {
+    data: { subscription },
+  } = supabase.auth.onAuthStateChange((event) => {
+    subscription.unsubscribe();
+    if (event === "PASSWORD_RECOVERY") {
+      navigateTo("/auth/reset-password", { replace: true });
+    } else {
+      navigateTo("/account", { replace: true });
+    }
+  });
+
+  // Fallback si l'événement ne se déclenche pas dans les 5s
+  setTimeout(() => {
+    subscription.unsubscribe();
+    navigateTo("/account", { replace: true });
+  }, 5000);
+});
+</script>

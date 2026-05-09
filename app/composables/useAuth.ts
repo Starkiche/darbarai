@@ -6,21 +6,31 @@ export const useAuth = () => {
 
   const profile = useState<Profile | null>("auth:profile", () => null);
 
-  // Charger le profil depuis la table profiles
-  const fetchProfile = async () => {
-    if (!user.value) {
+  const fetchProfile = async (userId?: string) => {
+    const id = userId ?? user.value?.id;
+    if (!id) {
       profile.value = null;
       return;
     }
     const { data } = await supabase
       .from("profiles")
       .select("*")
-      .eq("id", user.value.id)
+      .eq("id", id)
       .single();
     profile.value = data;
   };
 
   const isAdmin = computed(() => profile.value?.role === "admin");
+
+  if (import.meta.client) {
+    supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user) {
+        fetchProfile(session.user.id);
+      } else {
+        profile.value = null;
+      }
+    });
+  }
 
   const signInWithGoogle = () =>
     supabase.auth.signInWithOAuth({
@@ -48,9 +58,6 @@ export const useAuth = () => {
     supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/auth/reset-password`,
     });
-
-  // Watch user changes
-  watch(user, fetchProfile, { immediate: true });
 
   return {
     user,

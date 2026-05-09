@@ -1,20 +1,3 @@
-<script setup lang="ts">
-definePageMeta({ middleware: "auth" });
-const { profile } = useAuth();
-const { fetchMyReservations } = useBooking();
-const { t } = useI18n();
-
-const reservations = ref(await fetchMyReservations());
-
-const tabs = [
-  { id: "reservations", label: t("account.my_reservations") },
-  { id: "profile", label: t("account.profile") },
-];
-const activeTab = ref("reservations");
-
-useSeoMeta({ title: "Mon espace – Dar Baraï" });
-</script>
-
 <template>
   <div class="max-w-4xl mx-auto px-4 py-12">
     <h1 class="section-title mb-8">{{ t("account.title") }}</h1>
@@ -59,3 +42,20 @@ useSeoMeta({ title: "Mon espace – Dar Baraï" });
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+definePageMeta({ middleware: "auth" });
+const { profile } = useAuth();
+const { fetchMyReservations } = useBooking();
+const { t } = useI18n();
+
+const reservations = ref(await fetchMyReservations());
+
+const tabs = [
+  { id: "reservations", label: t("account.my_reservations") },
+  { id: "profile", label: t("account.profile") },
+];
+const activeTab = ref("reservations");
+
+useSeoMeta({ title: t("seo.account_title") });
+</script>

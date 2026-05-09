@@ -1,3 +1,41 @@
+<template>
+  <div>
+    <div class="flex items-center justify-between mb-6">
+      <h1 class="text-2xl font-semibold text-stone-800">
+        {{ t("admin.reservations") }}
+      </h1>
+    </div>
+
+    <!-- Filtres -->
+    <div class="flex gap-2 mb-4">
+      <button
+        v-for="s in ['all', 'pending', 'confirmed', 'cancelled']"
+        :key="s"
+        class="px-3 py-1.5 rounded-full text-sm transition-colors"
+        :class="
+          status === s
+            ? 'bg-terracotta-600 text-white'
+            : 'bg-white text-stone-600 hover:bg-stone-100'
+        "
+        @click="
+          status = s;
+          page = 1;
+        "
+      >
+        {{ s === "all" ? t("admin.filter_all") : t(`reservation.status_${s}`) }}
+      </button>
+    </div>
+
+    <div class="card">
+      <AdminReservationsTable
+        :reservations="reservations?.data ?? []"
+        :loading="!reservations"
+        @refresh="refresh"
+      />
+    </div>
+  </div>
+</template>
+
 <script setup lang="ts">
 definePageMeta({ middleware: "admin", layout: "admin" });
 const supabase = useSupabaseClient();
@@ -26,43 +64,5 @@ const { data: reservations, refresh } = await useAsyncData(
   { watch: [page, status] },
 );
 
-useSeoMeta({ title: "Réservations – Admin" });
+useSeoMeta({ title: t("admin.seo_reservations_title") });
 </script>
-
-<template>
-  <div>
-    <div class="flex items-center justify-between mb-6">
-      <h1 class="text-2xl font-semibold text-stone-800">
-        {{ t("admin.reservations") }}
-      </h1>
-    </div>
-
-    <!-- Filtres -->
-    <div class="flex gap-2 mb-4">
-      <button
-        v-for="s in ['all', 'pending', 'confirmed', 'cancelled']"
-        :key="s"
-        class="px-3 py-1.5 rounded-full text-sm transition-colors"
-        :class="
-          status === s
-            ? 'bg-terracotta-600 text-white'
-            : 'bg-white text-stone-600 hover:bg-stone-100'
-        "
-        @click="
-          status = s;
-          page = 1;
-        "
-      >
-        {{ s === "all" ? "Toutes" : t(`reservation.status_${s}`) }}
-      </button>
-    </div>
-
-    <div class="card">
-      <AdminReservationsTable
-        :reservations="reservations?.data ?? []"
-        :loading="!reservations"
-        @refresh="refresh"
-      />
-    </div>
-  </div>
-</template>

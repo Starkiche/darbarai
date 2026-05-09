@@ -1,29 +1,3 @@
-<script setup lang="ts">
-definePageMeta({ layout: "auth" });
-const { signInWithEmail, signInWithGoogle } = useAuth();
-const { t } = useI18n();
-
-const form = reactive({ email: "", password: "" });
-const error = ref<string | null>(null);
-const loading = ref(false);
-
-const onSubmit = async () => {
-  error.value = null;
-  loading.value = true;
-  const { error: err } = await signInWithEmail(form.email, form.password);
-  loading.value = false;
-  if (err) {
-    error.value = err.message;
-  } else {
-    await navigateTo("/account");
-  }
-};
-
-const onGoogle = async () => {
-  await signInWithGoogle();
-};
-</script>
-
 <template>
   <div>
     <h1 class="font-serif text-2xl text-center mb-6">
@@ -90,3 +64,29 @@ const onGoogle = async () => {
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+definePageMeta({ layout: "auth" });
+const { signInWithEmail, signInWithGoogle } = useAuth();
+const { t } = useI18n();
+
+const form = reactive({ email: "", password: "" });
+const error = ref<string | null>(null);
+const loading = ref(false);
+
+const onSubmit = async () => {
+  error.value = null;
+  loading.value = true;
+  const { error: err } = await signInWithEmail(form.email, form.password);
+  loading.value = false;
+  if (err) {
+    error.value = err.message;
+  } else {
+    await navigateTo("/account");
+  }
+};
+
+const onGoogle = async () => {
+  await signInWithGoogle();
+};
+</script>

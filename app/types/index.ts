@@ -2,7 +2,59 @@
 // Types globaux – Dar Baraï / Dar Tanawi
 // ============================================================
 
+// --- Service à la carte -----------------------------------------
+export type ServiceCategory =
+  | "transport"
+  | "wellness"
+  | "excursion"
+  | "food"
+  | "other";
+
+export interface Service {
+  id: string;
+  slug: string;
+  name: string;
+  name_en: string | null;
+  description: string | null;
+  description_en: string | null;
+  price_cents: number | null; // null = sur demande
+  icon: string | null; // emoji
+  category: ServiceCategory;
+  active: boolean;
+  sort_order: number;
+  created_at: string;
+}
+
 // --- Riad -------------------------------------------------------
+export interface RiadGalleryGroup {
+  label: string;
+  label_en?: string;
+  photos: string[];
+}
+
+export interface RiadSleepingArrangement {
+  label: string;
+  label_en?: string;
+  beds: string;
+  beds_en?: string;
+}
+
+export interface RiadService {
+  name: string;
+  name_en?: string;
+  description?: string;
+  description_en?: string;
+  price_cents: number; // 0 = inclus
+}
+
+export interface RiadLocation {
+  address: string;
+  neighborhood?: string;
+  lat?: number;
+  lng?: number;
+  google_maps_url?: string;
+}
+
 export interface Riad {
   id: string;
   slug: "dar-barai" | "dar-tanawi";
@@ -11,9 +63,22 @@ export interface Riad {
   description: string;
   description_en: string;
   cover_image: string;
-  images: string[];
+  images: string[]; // legacy – remplacé par gallery
+  gallery: RiadGalleryGroup[];
   max_guests: number;
+  min_nights: number;
+  area_sqm: number | null;
   base_price_per_night: number; // EUR centimes (Stripe)
+  sleeping_arrangements: RiadSleepingArrangement[];
+  amenities: string[];
+  services: RiadService[];
+  location: RiadLocation | null;
+  house_rules: string[];
+  house_rules_en: string[];
+  checkin_time: string;
+  checkout_time: string;
+  cancellation_policy: string | null;
+  cancellation_policy_en: string | null;
   ical_airbnb_url: string | null;
   ical_booking_url: string | null;
   created_at: string;

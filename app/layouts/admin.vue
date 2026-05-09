@@ -3,7 +3,7 @@
     <!-- Sidebar -->
     <AdminSidebar />
     <!-- Main content -->
-    <div class="flex-1 flex flex-col min-w-0">
+    <div class="flex-1 flex flex-col min-w-0 ml-64">
       <AdminHeader />
       <main class="flex-1 p-6 overflow-auto">
         <slot />

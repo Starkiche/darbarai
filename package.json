@@ -10,6 +10,7 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "@mdi/js": "^7.4.47",
     "@nuxt/image": "^2.0.0",
     "@nuxtjs/i18n": "^10.3.0",
     "@nuxtjs/supabase": "^2.0.6",
@@ -23,9 +24,11 @@
     "@tiptap/extension-underline": "^3.22.5",
     "@tiptap/starter-kit": "^3.22.5",
     "@tiptap/vue-3": "^3.22.5",
+    "@types/leaflet": "^1.9.21",
     "@vueuse/nuxt": "^14.3.0",
     "date-fns": "^4.1.0",
     "ical-generator": "^10.2.0",
+    "leaflet": "^1.9.4",
     "node-ical": "^0.26.1",
     "nuxt": "^4.4.4",
     "resend": "^6.12.3",

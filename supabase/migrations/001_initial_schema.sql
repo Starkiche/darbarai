@@ -189,31 +189,40 @@ alter table public.availability enable row level security;
 alter table public.reservations enable row level security;
 alter table public.newsletters_sent enable row level security;
 
+-- Fonction helper : vérifie si l'utilisateur courant est admin
+-- security definer = bypass RLS quand elle interroge profiles (évite la récursion)
+create or replace function public.is_admin()
+returns boolean
+language sql
+security definer
+stable
+set search_path = public
+as $$
+  select coalesce(
+    (select role = 'admin' from public.profiles where id = auth.uid()),
+    false
+  );
+$$;
+
 -- Profiles
 create policy "Lecture profil propre" on public.profiles
   for select using (auth.uid() = id);
 create policy "Mise à jour profil propre" on public.profiles
   for update using (auth.uid() = id) with check (auth.uid() = id);
 create policy "Admin: lecture tous profils" on public.profiles
-  for select using (
-    exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin')
-  );
+  for select using (public.is_admin());
 
 -- Riads: lecture publique
 create policy "Riads publics" on public.riads
   for select using (true);
 create policy "Admin: gestion riads" on public.riads
-  for all using (
-    exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin')
-  );
+  for all using (public.is_admin()) with check (public.is_admin());
 
 -- Availability: lecture publique
 create policy "Availability publique" on public.availability
   for select using (true);
 create policy "Admin: gestion availability" on public.availability
-  for all using (
-    exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin')
-  );
+  for all using (public.is_admin()) with check (public.is_admin());
 
 -- Reservations
 create policy "Lecture réservations propres" on public.reservations
@@ -221,12 +230,8 @@ create policy "Lecture réservations propres" on public.reservations
 create policy "Création réservation propre" on public.reservations
   for insert with check (auth.uid() = user_id);
 create policy "Admin: toutes réservations" on public.reservations
-  for all using (
-    exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin')
-  );
+  for all using (public.is_admin()) with check (public.is_admin());
 
 -- Newsletters: admin only
 create policy "Admin: newsletters" on public.newsletters_sent
-  for all using (
-    exists (select 1 from public.profiles p where p.id = auth.uid() and p.role = 'admin')
-  );
+  for all using (public.is_admin()) with check (public.is_admin());

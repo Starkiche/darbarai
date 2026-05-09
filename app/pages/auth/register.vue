@@ -1,39 +1,3 @@
-<script setup lang="ts">
-definePageMeta({ layout: "auth" });
-const { signUpWithEmail } = useAuth();
-const { t } = useI18n();
-
-const form = reactive({
-  email: "",
-  password: "",
-  confirmPassword: "",
-  fullName: "",
-});
-const error = ref<string | null>(null);
-const loading = ref(false);
-const success = ref(false);
-
-const onSubmit = async () => {
-  error.value = null;
-  if (form.password !== form.confirmPassword) {
-    error.value = "Les mots de passe ne correspondent pas.";
-    return;
-  }
-  loading.value = true;
-  const { error: err } = await signUpWithEmail(
-    form.email,
-    form.password,
-    form.fullName,
-  );
-  loading.value = false;
-  if (err) {
-    error.value = err.message;
-  } else {
-    success.value = true;
-  }
-};
-</script>
-
 <template>
   <div>
     <h1 class="font-serif text-2xl text-center mb-6">
@@ -42,7 +6,7 @@ const onSubmit = async () => {
 
     <div v-if="success" class="text-center py-8">
       <p class="text-green-700 font-medium">
-        Compte créé ! Vérifiez votre email pour confirmer votre adresse.
+        {{ t("auth.register_success") }}
       </p>
     </div>
 
@@ -113,3 +77,39 @@ const onSubmit = async () => {
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+definePageMeta({ layout: "auth" });
+const { signUpWithEmail } = useAuth();
+const { t } = useI18n();
+
+const form = reactive({
+  email: "",
+  password: "",
+  confirmPassword: "",
+  fullName: "",
+});
+const error = ref<string | null>(null);
+const loading = ref(false);
+const success = ref(false);
+
+const onSubmit = async () => {
+  error.value = null;
+  if (form.password !== form.confirmPassword) {
+    error.value = t("auth.passwords_mismatch");
+    return;
+  }
+  loading.value = true;
+  const { error: err } = await signUpWithEmail(
+    form.email,
+    form.password,
+    form.fullName,
+  );
+  loading.value = false;
+  if (err) {
+    error.value = err.message;
+  } else {
+    success.value = true;
+  }
+};
+</script>

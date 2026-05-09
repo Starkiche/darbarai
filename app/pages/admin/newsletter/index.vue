@@ -1,10 +1,3 @@
-<script setup lang="ts">
-definePageMeta({ middleware: "admin", layout: "admin" });
-const { t } = useI18n();
-
-useSeoMeta({ title: "Newsletter – Admin" });
-</script>
-
 <template>
   <div>
     <h1 class="text-2xl font-semibold text-stone-800 mb-6">
@@ -15,3 +8,10 @@ useSeoMeta({ title: "Newsletter – Admin" });
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+definePageMeta({ middleware: "admin", layout: "admin" });
+const { t } = useI18n();
+
+useSeoMeta({ title: t("admin.seo_newsletter_title") });
+</script>

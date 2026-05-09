@@ -46,7 +46,7 @@ export default defineNuxtConfig({
     // Côté client
     public: {
       supabaseUrl: process.env.SUPABASE_URL,
-      supabaseKey: process.env.SUPABASE_ANON_KEY,
+      supabaseKey: process.env.SUPABASE_KEY,
       stripePublicKey: process.env.STRIPE_PUBLIC_KEY,
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
     },
@@ -61,5 +61,12 @@ export default defineNuxtConfig({
   // Images
   image: {
     domains: ["your-supabase-project.supabase.co"],
+  },
+
+  // Nitro: augmente la limite du body pour les uploads d'images
+  nitro: {
+    routeRules: {
+      "/api/upload/**": { bodySize: "10mb" },
+    },
   },
 });
