@@ -9,6 +9,112 @@
       </button>
     </div>
 
+    <!-- Gestion des catégories -->
+    <div class="card p-5 mb-8">
+      <div
+        class="flex items-center justify-between cursor-pointer"
+        @click="showCatPanel = !showCatPanel"
+      >
+        <h2 class="font-semibold text-stone-700 text-sm">
+          {{ t("admin.categories_title") }}
+          <span class="ml-2 text-xs text-stone-400"
+            >({{ allCategories.length }})</span
+          >
+        </h2>
+        <span class="text-stone-400 text-xs">{{
+          showCatPanel ? "▲" : "▼"
+        }}</span>
+      </div>
+
+      <div v-if="showCatPanel" class="mt-4 space-y-2">
+        <!-- Liste des catégories -->
+        <div
+          v-for="cat in allCategories"
+          :key="cat.id"
+          class="flex items-center gap-2"
+        >
+          <input
+            :value="cat.name"
+            class="input flex-1 text-sm"
+            :placeholder="t('admin.cat_name_fr')"
+            @change="
+              updateCat(cat, 'name', ($event.target as HTMLInputElement).value)
+            "
+          />
+          <input
+            :value="cat.name_en"
+            class="input flex-1 text-sm"
+            :placeholder="t('admin.cat_name_en')"
+            @change="
+              updateCat(
+                cat,
+                'name_en',
+                ($event.target as HTMLInputElement).value,
+              )
+            "
+          />
+          <input
+            :value="cat.sort_order"
+            type="number"
+            min="0"
+            class="input w-16 text-sm"
+            @change="
+              updateCat(
+                cat,
+                'sort_order',
+                Number(($event.target as HTMLInputElement).value),
+              )
+            "
+          />
+          <button
+            class="text-xs px-2 py-1 rounded border border-stone-200 text-stone-400 hover:border-red-300 hover:text-red-500 transition-colors"
+            @click="removeCat(cat.id)"
+          >
+            ✕
+          </button>
+        </div>
+
+        <!-- Nouvelle catégorie -->
+        <div
+          v-if="newCatForm.open"
+          class="flex items-center gap-2 pt-1 border-t border-stone-100"
+        >
+          <input
+            v-model="newCatForm.name"
+            class="input flex-1 text-sm"
+            :placeholder="t('admin.cat_name_fr')"
+          />
+          <input
+            v-model="newCatForm.name_en"
+            class="input flex-1 text-sm"
+            :placeholder="t('admin.cat_name_en')"
+          />
+          <button class="btn-primary text-xs px-3" @click="addCat">
+            {{ t("common.save") }}
+          </button>
+          <button
+            class="btn-secondary text-xs px-3"
+            @click="newCatForm.open = false"
+          >
+            {{ t("common.cancel") }}
+          </button>
+        </div>
+        <div v-else>
+          <button
+            class="btn-secondary text-xs mt-1"
+            @click="
+              newCatForm.open = true;
+              newCatForm.name = '';
+              newCatForm.name_en = '';
+            "
+          >
+            + {{ t("admin.cat_add") }}
+          </button>
+        </div>
+        <p v-if="catError" class="text-xs text-red-500">{{ catError }}</p>
+      </div>
+    </div>
+
     <!-- Formulaire ajout / édition -->
     <div v-if="editing" class="card p-6 mb-8 border-l-4 border-terracotta-500">
       <h2 class="font-semibold text-stone-800 mb-5">
@@ -48,8 +154,12 @@
             t("admin.service_category")
           }}</label>
           <select v-model="form.category" class="input w-full">
-            <option v-for="cat in CATEGORIES" :key="cat" :value="cat">
-              {{ t(`services.category_${cat}`) }}
+            <option
+              v-for="cat in allCategories"
+              :key="cat.slug"
+              :value="cat.slug"
+            >
+              {{ cat.name }}
             </option>
           </select>
         </div>
@@ -93,6 +203,60 @@
             class="input w-24"
           />
         </div>
+        <div class="sm:col-span-2">
+          <label class="block text-sm font-medium text-stone-600 mb-1">{{
+            t("admin.service_details_fr")
+          }}</label>
+          <AdminRichTextEditor v-model="form.details" />
+        </div>
+        <div class="sm:col-span-2">
+          <label class="block text-sm font-medium text-stone-600 mb-1">{{
+            t("admin.service_details_en")
+          }}</label>
+          <AdminRichTextEditor v-model="form.details_en" />
+        </div>
+        <div class="sm:col-span-2">
+          <label class="block text-sm font-medium text-stone-600 mb-1">{{
+            t("admin.service_photos")
+          }}</label>
+          <div class="space-y-2">
+            <div v-for="(_, i) in form.photos" :key="i" class="flex gap-2">
+              <input
+                v-model="form.photos[i]"
+                class="input flex-1 text-xs"
+                placeholder="https://..."
+              />
+              <button
+                class="btn-secondary text-xs px-3"
+                @click="form.photos.splice(i, 1)"
+              >
+                ✕
+              </button>
+            </div>
+            <button class="btn-secondary text-xs" @click="form.photos.push('')">
+              + {{ t("admin.service_add_photo") }}
+            </button>
+            <button
+              class="btn-secondary text-xs"
+              :disabled="uploadingPhotos"
+              @click="photoFileInput?.click()"
+            >
+              {{
+                uploadingPhotos
+                  ? t("common.loading")
+                  : t("admin.service_upload_photo")
+              }}
+            </button>
+            <input
+              ref="photoFileInput"
+              type="file"
+              multiple
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              class="hidden"
+              @change="onPhotoUpload"
+            />
+          </div>
+        </div>
       </div>
       <div class="flex items-center gap-3 mt-6">
         <button class="btn-primary text-sm" :disabled="saving" @click="save">
@@ -124,7 +288,10 @@
             <span
               class="text-xs px-2 py-0.5 rounded-full bg-stone-100 text-stone-500"
             >
-              {{ t(`services.category_${service.category}`) }}
+              {{
+                allCategories.find((c) => c.slug === service.category)?.name ??
+                service.category
+              }}
             </span>
             <span
               v-if="!service.active"
@@ -184,22 +351,75 @@
 </template>
 
 <script setup lang="ts">
-import type { Service, ServiceCategory } from "~/types";
+import type { Service } from "~/types";
+import type { ServiceCategoryRecord } from "~/composables/useServiceCategories";
 
 definePageMeta({ layout: "admin", middleware: "admin" });
 
 const { t } = useI18n();
 const { fetchServices, createService, updateService, deleteService } =
   useServices();
+const { fetchCategories, createCategory, updateCategory, deleteCategory } =
+  useServiceCategories();
 const { formatPrice } = useRiad();
 
-const CATEGORIES: ServiceCategory[] = [
-  "transport",
-  "wellness",
-  "excursion",
-  "food",
-  "other",
-];
+// Catégories
+const allCategories = ref<ServiceCategoryRecord[]>([]);
+const showCatPanel = ref(false);
+const catError = ref<string | null>(null);
+const newCatForm = reactive({ open: false, name: "", name_en: "" });
+
+const loadCategories = async () => {
+  const { data } = await fetchCategories();
+  allCategories.value = data;
+};
+
+const addCat = async () => {
+  if (!newCatForm.name.trim()) return;
+  const slug = newCatForm.name
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+  const { error } = await createCategory({
+    slug,
+    name: newCatForm.name.trim(),
+    name_en: newCatForm.name_en.trim() || null,
+    sort_order: allCategories.value.length,
+  });
+  if (error) {
+    catError.value = error.message;
+    return;
+  }
+  catError.value = null;
+  newCatForm.open = false;
+  await loadCategories();
+};
+
+const updateCat = async (
+  cat: ServiceCategoryRecord,
+  field: keyof ServiceCategoryRecord,
+  value: string | number,
+) => {
+  const { error } = await updateCategory(cat.id, { [field]: value });
+  if (error) {
+    catError.value = error.message;
+    return;
+  }
+  catError.value = null;
+  await loadCategories();
+};
+
+const removeCat = async (id: string) => {
+  if (!confirm(t("admin.cat_confirm_delete"))) return;
+  const { error } = await deleteCategory(id);
+  if (error) {
+    catError.value = error.message;
+    return;
+  }
+  await loadCategories();
+};
 
 const allServices = ref<Service[]>([]);
 
@@ -207,7 +427,9 @@ const loadServices = async () => {
   const { data } = await fetchServices(false);
   allServices.value = data;
 };
-await useAsyncData("admin-services", loadServices);
+await useAsyncData("admin-services", async () => {
+  await Promise.all([loadServices(), loadCategories()]);
+});
 
 // Formulaire
 const editing = ref(false);
@@ -221,6 +443,9 @@ const emptyForm = () => ({
   name_en: null as string | null,
   description: null as string | null,
   description_en: null as string | null,
+  details: null as string | null,
+  details_en: null as string | null,
+  photos: [] as string[],
   price_cents: null as number | null,
   icon: null as string | null,
   category: "other" as ServiceCategory,
@@ -269,7 +494,8 @@ const save = async () => {
       .replace(/^-|-$/g, "");
   }
 
-  const payload = { ...form };
+  const { id: _id, created_at: _ca, ...rest } = form as any;
+  const payload = rest;
   let error;
 
   if (editingId.value) {
@@ -286,6 +512,39 @@ const save = async () => {
     editingId.value = null;
     await loadServices();
   }
+};
+
+// Upload photo depuis le PC
+const supabaseClient = useSupabaseClient();
+const photoFileInput = ref<HTMLInputElement | null>(null);
+const uploadingPhotos = ref(false);
+
+const onPhotoUpload = async (e: Event) => {
+  const files = Array.from((e.target as HTMLInputElement).files ?? []);
+  if (!files.length) return;
+  uploadingPhotos.value = true;
+  const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+  for (const file of files) {
+    if (!allowedTypes.includes(file.type)) {
+      saveError.value = "Type non autorisé (jpg, png, webp, gif uniquement)";
+      continue;
+    }
+    const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
+    const safeName = `services/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+    const { error } = await supabaseClient.storage
+      .from("riads")
+      .upload(safeName, file, { contentType: file.type, upsert: false });
+    if (error) {
+      saveError.value = error.message;
+      continue;
+    }
+    const { data } = supabaseClient.storage
+      .from("riads")
+      .getPublicUrl(safeName);
+    form.photos.push(data.publicUrl);
+  }
+  uploadingPhotos.value = false;
+  if (photoFileInput.value) photoFileInput.value.value = "";
 };
 
 const toggleActive = async (service: Service) => {

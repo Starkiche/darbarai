@@ -67,6 +67,13 @@
         </NuxtLink>
       </nav>
 
+      <!-- Debug isAdmin -->
+      <span
+        class="text-xs font-mono px-2 py-0.5 rounded bg-yellow-100 text-yellow-800 border border-yellow-300"
+      >
+        isAdmin: {{ isAdmin }}
+      </span>
+
       <!-- Actions -->
       <div class="flex items-center gap-3">
         <!-- Sélecteur de langue -->

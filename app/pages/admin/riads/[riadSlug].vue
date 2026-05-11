@@ -357,7 +357,9 @@
             />
           </div>
           <div class="flex items-center gap-3">
-            <label class="admin-label mb-0">Prix (€) — 0 = inclus</label>
+            <label class="admin-label mb-0"
+              >Prix (€) — 0 = inclus, vide = sur demande</label
+            >
             <input
               v-model="svc.priceEur"
               type="number"
@@ -952,17 +954,17 @@ const onSyncIcal = async () => {
     .eq("id", riad.value!.id);
   syncingIcal.value = true;
   syncResult.value = null;
-  const { data, error } = await useFetch<{ synced: { imported: number }[] }>(
-    "/api/ical/sync",
-    { method: "POST" },
-  );
-  syncingIcal.value = false;
-  if (error.value) {
-    syncResult.value = `Erreur : ${error.value.message}`;
-  } else {
-    const total = data.value?.synced.reduce((s, r) => s + r.imported, 0) ?? 0;
+  try {
+    const data = await $fetch<{ synced: { imported: number }[] }>(
+      "/api/ical/sync",
+      { method: "POST" },
+    );
+    const total = data?.synced.reduce((s, r) => s + r.imported, 0) ?? 0;
     syncResult.value = `${total} créneau(x) importé(s)`;
+  } catch (err: any) {
+    syncResult.value = `Erreur : ${err?.message ?? err}`;
   }
+  syncingIcal.value = false;
 };
 
 useSeoMeta({ title: `${form.name || riadSlug} – Admin` });

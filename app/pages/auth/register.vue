@@ -88,7 +88,11 @@ const form = reactive({
   password: "",
   confirmPassword: "",
   fullName: "",
+  birthDate: "",
 });
+const maxBirthDate = new Date(Date.now() - 18 * 365.25 * 24 * 3600 * 1000)
+  .toISOString()
+  .split("T")[0];
 const error = ref<string | null>(null);
 const loading = ref(false);
 const success = ref(false);
@@ -104,6 +108,7 @@ const onSubmit = async () => {
     form.email,
     form.password,
     form.fullName,
+    form.birthDate,
   );
   loading.value = false;
   if (err) {

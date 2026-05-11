@@ -3,12 +3,7 @@
 // ============================================================
 
 // --- Service à la carte -----------------------------------------
-export type ServiceCategory =
-  | "transport"
-  | "wellness"
-  | "excursion"
-  | "food"
-  | "other";
+export type ServiceCategory = string;
 
 export interface Service {
   id: string;
@@ -17,6 +12,9 @@ export interface Service {
   name_en: string | null;
   description: string | null;
   description_en: string | null;
+  details: string | null; // texte long (HTML ou markdown) FR
+  details_en: string | null; // texte long EN
+  photos: string[]; // URLs photos
   price_cents: number | null; // null = sur demande
   icon: string | null; // emoji
   category: ServiceCategory;
@@ -44,7 +42,7 @@ export interface RiadService {
   name_en?: string;
   description?: string;
   description_en?: string;
-  price_cents: number; // 0 = inclus
+  price_cents: number | null; // null = prix variable, 0 = inclus, >0 = prix fixe
 }
 
 export interface RiadLocation {
@@ -126,6 +124,7 @@ export interface Profile {
   email: string;
   full_name: string | null;
   phone: string | null;
+  birth_date: string | null;
   avatar_url: string | null;
   role: UserRole;
   newsletter_subscribed: boolean;

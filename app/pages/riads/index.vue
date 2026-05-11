@@ -22,6 +22,7 @@
             v-if="riads[0]?.cover_image"
             :src="riads[0].cover_image"
             :alt="riads[0].name"
+            0
             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
         </div>

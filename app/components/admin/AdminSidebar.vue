@@ -2,6 +2,29 @@
   <aside
     class="w-64 shrink-0 bg-stone-900 text-stone-300 flex flex-col fixed top-0 left-0 h-screen z-30"
   >
+    <!-- Retour accueil -->
+    <div class="px-4 pt-4">
+      <NuxtLink
+        to="/"
+        class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-stone-400 hover:bg-stone-800 hover:text-white transition-colors w-full"
+      >
+        <svg
+          class="w-4 h-4 shrink-0"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+          />
+        </svg>
+        {{ t("admin.back_to_site") }}
+      </NuxtLink>
+    </div>
+
     <!-- Logo -->
     <div class="px-6 py-5 border-b border-stone-800">
       <NuxtLink to="/" class="font-serif text-xl text-white"

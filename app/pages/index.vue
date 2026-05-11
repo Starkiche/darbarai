@@ -17,12 +17,9 @@
         {{ t("home.hero_subtitle") }}
       </p>
       <div class="flex flex-col sm:flex-row gap-4 justify-center">
-        <NuxtLink to="/riads" class="btn-primary text-lg px-8 py-4">
-          {{ t("home.cta_discover") }}
-        </NuxtLink>
         <NuxtLink
           to="/riads/dar-barai#booking"
-          class="btn-secondary text-lg px-8 py-4 border-white text-white hover:bg-white/10"
+          class="btn-primary text-lg px-8 py-4 border-white text-white hover:bg-white/10"
         >
           {{ t("home.cta_book") }}
         </NuxtLink>

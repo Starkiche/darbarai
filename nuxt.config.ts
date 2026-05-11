@@ -63,6 +63,9 @@ export default defineNuxtConfig({
     domains: ["your-supabase-project.supabase.co"],
   },
 
+  // Dossier server dans app/ (par défaut Nuxt 4 le cherche à la racine)
+  serverDir: "./app/server",
+
   // Nitro: augmente la limite du body pour les uploads d'images
   nitro: {
     routeRules: {

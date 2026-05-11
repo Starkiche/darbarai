@@ -63,9 +63,11 @@
   "services": {
     "page_title": "Nos Services",
     "page_subtitle": "Des prestations sur-mesure pour enrichir votre séjour à Marrakech.",
+    "page_description": "Contactez-nous au +33 ..... pour nous dire les prestations que vous souhaitez. Il est conseillé de nous prévenir au moins 48h à l'avance pour pouvoir organiser dans les meilleures conditions l'évènement de votre choix",
     "seo_title": "Nos Services – Dar Baraï & Dar Tanawi",
     "on_request": "Sur demande",
     "per_person": "/ pers.",
+    "learn_more": "En savoir plus",
     "request": "Demander ce service",
     "empty": "Aucun service disponible pour le moment.",
     "category_transport": "Transport",
@@ -95,6 +97,7 @@
     "password": "Mot de passe",
     "confirm_password": "Confirmer le mot de passe",
     "full_name": "Nom complet",
+    "birth_date": "Date de naissance",
     "login_btn": "Se connecter",
     "register_btn": "Créer mon compte",
     "google_btn": "Continuer avec Google",
@@ -121,6 +124,7 @@
     "no_reservations": "Vous n'avez pas encore de réservation.",
     "reservation_ref": "Réf. {id}",
     "phone": "Téléphone",
+    "birth_date": "Date de naissance",
     "newsletter_subscribe": "Recevoir notre newsletter",
     "profile_saved": "Profil mis à jour."
   },
@@ -175,7 +179,17 @@
     "service_inactive": "Inactif",
     "service_activate": "Activer",
     "service_deactivate": "Désactiver",
-    "service_confirm_delete": "Supprimer ce service ?"
+    "service_confirm_delete": "Supprimer ce service ?",
+    "service_details_fr": "Détails (français, HTML accepté)",
+    "service_details_en": "Détails (anglais, HTML accepté)",
+    "service_photos": "Photos (URLs)",
+    "service_add_photo": "Ajouter une URL",
+    "service_upload_photo": "📁 Importer depuis le PC",
+    "categories_title": "Gérer les catégories",
+    "cat_name_fr": "Nom (FR)",
+    "cat_name_en": "Nom (EN)",
+    "cat_add": "Nouvelle catégorie",
+    "cat_confirm_delete": "Supprimer cette catégorie ?"
   },
   "seo": {
     "home_title": "Dar Baraï & Dar Tanawi – Riads à Marrakech",

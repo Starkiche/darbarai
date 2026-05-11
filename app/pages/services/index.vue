@@ -6,6 +6,9 @@
       <p class="text-stone-500 text-lg max-w-2xl mx-auto">
         {{ t("services.page_subtitle") }}
       </p>
+      <p class="text-stone-400 text-sm max-w-xl mx-auto mt-3">
+        {{ t("services.page_description") }}
+      </p>
     </div>
 
     <!-- Contenu -->
@@ -19,13 +22,14 @@
           <h2
             class="text-sm font-semibold uppercase tracking-widest text-terracotta-600 mb-6"
           >
-            {{ t(`services.category_${cat.category}`) }}
+            {{ cat.name }}
           </h2>
           <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <div
               v-for="service in cat.items"
               :key="service.id"
-              class="card p-6 flex flex-col gap-4 hover:shadow-md transition-shadow"
+              class="card p-6 flex flex-col gap-4 hover:shadow-md transition-shadow cursor-pointer"
+              @click="openModal(service)"
             >
               <div class="flex items-center gap-4">
                 <span class="text-4xl">{{ service.icon ?? "✨" }}</span>
@@ -38,12 +42,7 @@
                     }}
                   </h3>
                   <p class="text-sm font-medium text-terracotta-600 mt-0.5">
-                    <template
-                      v-if="
-                        service.price_cents === null ||
-                        service.price_cents === 0
-                      "
-                    >
+                    <template v-if="!service.price_cents">
                       {{ t("services.on_request") }}
                     </template>
                     <template v-else>
@@ -57,7 +56,7 @@
                 v-if="
                   locale === 'fr' ? service.description : service.description_en
                 "
-                class="text-stone-500 text-sm leading-relaxed flex-1"
+                class="text-stone-500 text-sm leading-relaxed flex-1 line-clamp-3"
               >
                 {{
                   locale === "fr"
@@ -65,19 +64,12 @@
                     : service.description_en || service.description
                 }}
               </p>
-              <a
-                :href="
-                  'mailto:contact@darbarai.com?subject=' +
-                  encodeURIComponent(
-                    locale === 'fr'
-                      ? service.name
-                      : service.name_en || service.name,
-                  )
-                "
+              <button
                 class="btn-secondary text-sm text-center mt-auto"
+                @click.stop="openModal(service)"
               >
-                {{ t("services.request") }}
-              </a>
+                {{ t("services.learn_more") }}
+              </button>
             </div>
           </div>
         </div>
@@ -89,36 +81,306 @@
         <p>{{ t("services.empty") }}</p>
       </div>
     </div>
+
+    <!-- MODAL -->
+    <Teleport to="body">
+      <Transition
+        enter-active-class="transition duration-200 ease-out"
+        enter-from-class="opacity-0"
+        enter-to-class="opacity-100"
+        leave-active-class="transition duration-150 ease-in"
+        leave-from-class="opacity-100"
+        leave-to-class="opacity-0"
+      >
+        <div
+          v-if="modal.open && modal.service"
+          class="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4"
+          @click.self="modal.open = false"
+        >
+          <div
+            class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+          >
+            <!-- Contenu -->
+            <div class="p-8">
+              <!-- Header -->
+              <div class="flex items-start justify-between mb-6">
+                <div class="flex items-center gap-3">
+                  <span class="text-4xl">{{ modal.service.icon ?? "✨" }}</span>
+                  <div>
+                    <h2 class="font-serif text-2xl text-stone-800">
+                      {{
+                        locale === "fr"
+                          ? modal.service.name
+                          : modal.service.name_en || modal.service.name
+                      }}
+                    </h2>
+                    <p class="text-sm font-medium text-terracotta-600 mt-0.5">
+                      <template v-if="!modal.service.price_cents">
+                        {{ t("services.on_request") }}
+                      </template>
+                      <template v-else>
+                        {{ formatPrice(modal.service.price_cents) }}
+                        {{ t("services.per_person") }}
+                      </template>
+                    </p>
+                  </div>
+                </div>
+                <button
+                  class="text-stone-400 hover:text-stone-600 transition-colors mt-1"
+                  @click="modal.open = false"
+                >
+                  <svg
+                    class="w-6 h-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              <!-- Description courte -->
+              <p
+                v-if="
+                  locale === 'fr'
+                    ? modal.service.description
+                    : modal.service.description_en
+                "
+                class="text-stone-600 leading-relaxed mb-6"
+              >
+                {{
+                  locale === "fr"
+                    ? modal.service.description
+                    : modal.service.description_en || modal.service.description
+                }}
+              </p>
+
+              <!-- Texte long (details) -->
+              <div
+                v-if="
+                  locale === 'fr'
+                    ? modal.service.details
+                    : modal.service.details_en
+                "
+                class="prose prose-stone max-w-none mb-8 text-sm"
+                v-html="
+                  locale === 'fr'
+                    ? modal.service.details
+                    : modal.service.details_en || modal.service.details
+                "
+              />
+
+              <!-- CTA -->
+
+              <!-- Photos -->
+              <div
+                v-if="modal.service.photos?.length"
+                class="mt-8 grid grid-cols-2 sm:grid-cols-3 gap-3"
+              >
+                <div
+                  v-for="(photo, i) in modal.service.photos"
+                  :key="i"
+                  class="aspect-[4/3] rounded-lg overflow-hidden cursor-zoom-in"
+                  @click="openLightbox(i)"
+                >
+                  <img
+                    :src="photo"
+                    :alt="modal.service.name + ' ' + (i + 1)"
+                    class="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!-- LIGHTBOX -->
+    <Teleport to="body">
+      <Transition
+        enter-active-class="transition duration-150 ease-out"
+        enter-from-class="opacity-0"
+        enter-to-class="opacity-100"
+        leave-active-class="transition duration-100 ease-in"
+        leave-from-class="opacity-100"
+        leave-to-class="opacity-0"
+      >
+        <div
+          v-if="lightbox.open"
+          class="fixed inset-0 z-[60] bg-black/90 flex items-center justify-center"
+          @click.self="lightbox.open = false"
+        >
+          <!-- Fermer -->
+          <button
+            class="absolute top-4 right-4 text-white/70 hover:text-white transition-colors"
+            @click="lightbox.open = false"
+          >
+            <svg
+              class="w-8 h-8"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              />
+            </svg>
+          </button>
+
+          <!-- Précédent -->
+          <button
+            v-if="lightboxPhotos.length > 1"
+            class="absolute left-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white transition-colors"
+            @click="lightboxPrev"
+          >
+            <svg
+              class="w-10 h-10"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+          </button>
+
+          <!-- Image -->
+          <img
+            :src="lightboxPhotos[lightbox.index]"
+            :alt="'Photo ' + (lightbox.index + 1)"
+            class="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl select-none"
+          />
+
+          <!-- Suivant -->
+          <button
+            v-if="lightboxPhotos.length > 1"
+            class="absolute right-4 top-1/2 -translate-y-1/2 text-white/70 hover:text-white transition-colors"
+            @click="lightboxNext"
+          >
+            <svg
+              class="w-10 h-10"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 5l7 7-7 7"
+              />
+            </svg>
+          </button>
+
+          <!-- Indicateur -->
+          <div
+            v-if="lightboxPhotos.length > 1"
+            class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2"
+          >
+            <button
+              v-for="(_, i) in lightboxPhotos"
+              :key="i"
+              class="w-2 h-2 rounded-full transition-colors"
+              :class="i === lightbox.index ? 'bg-white' : 'bg-white/40'"
+              @click="lightbox.index = i"
+            />
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { Service, ServiceCategory } from "~/types";
+import type { Service } from "~/types";
+import type { ServiceCategoryRecord } from "~/composables/useServiceCategories";
 
 const { t, locale } = useI18n();
 const { fetchServices } = useServices();
+const { fetchCategories } = useServiceCategories();
 const { formatPrice } = useRiad();
 
-const { data: services } = await useAsyncData("services-public", async () => {
-  const { data } = await fetchServices(true);
-  return data;
+const { data: pageData } = await useAsyncData("services-public", async () => {
+  const [{ data: services }, { data: categories }] = await Promise.all([
+    fetchServices(true),
+    fetchCategories(),
+  ]);
+  return { services: services ?? [], categories: categories ?? [] };
 });
 
-const CATEGORY_ORDER: ServiceCategory[] = [
-  "transport",
-  "wellness",
-  "excursion",
-  "food",
-  "other",
-];
+const services = computed(() => pageData.value?.services ?? []);
+const categories = computed(() => pageData.value?.categories ?? []);
 
 const servicesByCategory = computed(() => {
-  const list = services.value ?? [];
-  return CATEGORY_ORDER.map((cat) => ({
-    category: cat,
-    items: list.filter((s: Service) => s.category === cat),
-  })).filter((g) => g.items.length > 0);
+  const list = services.value;
+  return categories.value
+    .map((cat: ServiceCategoryRecord) => ({
+      category: cat.slug,
+      name: locale.value === "fr" ? cat.name : cat.name_en || cat.name,
+      items: list.filter((s: Service) => s.category === cat.slug),
+    }))
+    .filter((g) => g.items.length > 0);
 });
+
+// Modal
+const modal = reactive<{ open: boolean; service: Service | null }>({
+  open: false,
+  service: null,
+});
+
+const openModal = (service: Service) => {
+  modal.service = service;
+  modal.open = true;
+};
+
+// Lightbox
+const lightbox = reactive({ open: false, index: 0 });
+const lightboxPhotos = computed(() => modal.service?.photos ?? []);
+
+const openLightbox = (i: number) => {
+  lightbox.index = i;
+  lightbox.open = true;
+};
+
+const lightboxPrev = () => {
+  lightbox.index =
+    (lightbox.index - 1 + lightboxPhotos.value.length) %
+    lightboxPhotos.value.length;
+};
+
+const lightboxNext = () => {
+  lightbox.index = (lightbox.index + 1) % lightboxPhotos.value.length;
+};
+
+const onKeydown = (e: KeyboardEvent) => {
+  if (lightbox.open) {
+    if (e.key === "Escape") {
+      lightbox.open = false;
+    } else if (e.key === "ArrowLeft") {
+      lightboxPrev();
+    } else if (e.key === "ArrowRight") {
+      lightboxNext();
+    }
+  } else if (e.key === "Escape") {
+    modal.open = false;
+  }
+};
+onMounted(() => window.addEventListener("keydown", onKeydown));
+onUnmounted(() => window.removeEventListener("keydown", onKeydown));
 
 useSeoMeta({
   title: t("services.seo_title"),

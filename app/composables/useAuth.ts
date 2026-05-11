@@ -7,17 +7,24 @@ export const useAuth = () => {
   const profile = useState<Profile | null>("auth:profile", () => null);
 
   const fetchProfile = async (userId?: string) => {
-    const id = userId ?? user.value?.id;
+    let id = userId ?? user.value?.id;
+    if (!id) {
+      // Fallback: récupère la session directement
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      id = session?.user?.id;
+    }
     if (!id) {
       profile.value = null;
       return;
     }
-    const { data } = await supabase
+    const { data, error } = await (supabase as any)
       .from("profiles")
       .select("*")
       .eq("id", id)
       .single();
-    profile.value = data;
+    if (!error) profile.value = data;
   };
 
   const isAdmin = computed(() => profile.value?.role === "admin");
@@ -41,11 +48,16 @@ export const useAuth = () => {
   const signInWithEmail = (email: string, password: string) =>
     supabase.auth.signInWithPassword({ email, password });
 
-  const signUpWithEmail = (email: string, password: string, fullName: string) =>
+  const signUpWithEmail = (
+    email: string,
+    password: string,
+    fullName: string,
+    birthDate: string,
+  ) =>
     supabase.auth.signUp({
       email,
       password,
-      options: { data: { full_name: fullName } },
+      options: { data: { full_name: fullName, birth_date: birthDate } },
     });
 
   const signOut = async () => {

@@ -1,8 +1,5 @@
 import ical from "node-ical";
-import {
-  serverSupabaseServiceRole,
-  serverSupabaseUser,
-} from "#supabase/server";
+import { serverSupabaseServiceRole } from "#supabase/server";
 
 type ICalSource = "airbnb" | "booking";
 
@@ -15,21 +12,7 @@ interface BlockToInsert {
 }
 
 export default defineEventHandler(async (event) => {
-  // Admin only
-  const user = await serverSupabaseUser(event);
-  if (!user)
-    throw createError({ statusCode: 401, statusMessage: "Unauthorized" });
-
   const supabase = serverSupabaseServiceRole(event);
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
-
-  if (profile?.role !== "admin")
-    throw createError({ statusCode: 403, statusMessage: "Forbidden" });
 
   // Fetch all riads with ical URLs
   const { data: riads, error: riadsError } = await supabase

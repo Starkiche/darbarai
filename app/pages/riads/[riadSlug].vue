@@ -169,9 +169,11 @@
                 class="text-sm font-semibold text-terracotta-600 shrink-0 ml-4"
               >
                 {{
-                  service.price_cents === 0
-                    ? t("riads.service_included")
-                    : formatPrice(service.price_cents)
+                  service.price_cents === null
+                    ? t("services.on_request")
+                    : service.price_cents === 0
+                      ? t("riads.service_included")
+                      : formatPrice(service.price_cents)
                 }}
               </div>
             </div>

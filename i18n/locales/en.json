@@ -63,9 +63,10 @@
   "services": {
     "page_title": "Our Services",
     "page_subtitle": "Bespoke experiences to enrich your stay in Marrakech.",
-    "seo_title": "Our Services – Dar Baraï & Dar Tanawi",
+    "page_description": "Contact us to tell us which services you would like. We recommend letting us know at least 48 hours in advance so we can organise everything in the best possible conditions.",
     "on_request": "On request",
     "per_person": "/ person",
+    "learn_more": "Learn more",
     "request": "Request this service",
     "empty": "No services available at the moment.",
     "category_transport": "Transport",
@@ -95,6 +96,7 @@
     "password": "Password",
     "confirm_password": "Confirm password",
     "full_name": "Full name",
+    "birth_date": "Date of birth",
     "login_btn": "Sign in",
     "register_btn": "Create account",
     "google_btn": "Continue with Google",
@@ -121,6 +123,7 @@
     "no_reservations": "You have no reservations yet.",
     "reservation_ref": "Ref. {id}",
     "phone": "Phone",
+    "birth_date": "Date of birth",
     "newsletter_subscribe": "Receive our newsletter",
     "profile_saved": "Profile updated."
   },
@@ -175,7 +178,17 @@
     "service_inactive": "Inactive",
     "service_activate": "Activate",
     "service_deactivate": "Deactivate",
-    "service_confirm_delete": "Delete this service?"
+    "service_confirm_delete": "Delete this service?",
+    "service_details_fr": "Details (French, HTML accepted)",
+    "service_details_en": "Details (English, HTML accepted)",
+    "service_photos": "Photos (URLs)",
+    "service_add_photo": "Add a URL",
+    "service_upload_photo": "📁 Upload from PC",
+    "categories_title": "Manage categories",
+    "cat_name_fr": "Name (FR)",
+    "cat_name_en": "Name (EN)",
+    "cat_add": "New category",
+    "cat_confirm_delete": "Delete this category?"
   },
   "seo": {
     "home_title": "Dar Baraï & Dar Tanawi – Riads in Marrakech",

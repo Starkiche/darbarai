@@ -19,7 +19,7 @@
       </button>
     </div>
 
-    <!-- Reservations -->
+    <!-- Réservations -->
     <div v-if="activeTab === 'reservations'">
       <div
         v-if="reservations.length === 0"
@@ -28,7 +28,7 @@
         {{ t("account.no_reservations") }}
       </div>
       <div v-else class="space-y-4">
-        <ReservationCard
+        <BookingReservationCard
           v-for="res in reservations"
           :key="res.id"
           :reservation="res"
@@ -36,26 +36,31 @@
       </div>
     </div>
 
-    <!-- Profile -->
+    <!-- Profil -->
     <div v-if="activeTab === 'profile'">
-      <AccountProfileForm :profile="profile" />
+      <UiAccountProfileForm :profile="profile" />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 definePageMeta({ middleware: "auth" });
-const { profile } = useAuth();
+const { profile, fetchProfile } = useAuth();
 const { fetchMyReservations } = useBooking();
 const { t } = useI18n();
 
-const reservations = ref(await fetchMyReservations());
+const reservations = ref<any[]>([]);
+const activeTab = ref("profile");
 
 const tabs = [
-  { id: "reservations", label: t("account.my_reservations") },
   { id: "profile", label: t("account.profile") },
+  { id: "reservations", label: t("account.my_reservations") },
 ];
-const activeTab = ref("reservations");
+
+onMounted(async () => {
+  await fetchProfile();
+  reservations.value = await fetchMyReservations();
+});
 
 useSeoMeta({ title: t("seo.account_title") });
 </script>
