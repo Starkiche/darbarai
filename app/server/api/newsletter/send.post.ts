@@ -1,8 +1,6 @@
 import { Resend } from "resend";
-import {
-  serverSupabaseServiceRole,
-  serverSupabaseUser,
-} from "#supabase/server";
+import { serverSupabaseServiceRole, serverSupabaseUser } from "#supabase/server";
+import { unsubscribeUrl, templates } from "~/server/utils/emailTemplates";
 
 export default defineEventHandler(async (event) => {
   // Admin only
@@ -47,9 +45,7 @@ export default defineEventHandler(async (event) => {
 
   const config = useRuntimeConfig();
   const resend = new Resend(config.resendApiKey);
-  const fromAddress = `${process.env.RESEND_FROM_NAME || "Dar Baraï"} <${process.env.RESEND_FROM_EMAIL || "reservations@darbarai.com"}>`;
-
-  const siteUrl = config.public.siteUrl || "https://www.darbarai.com";
+  const FROM = `${process.env.RESEND_FROM_NAME || "Dar Baraï"} <${process.env.RESEND_FROM_EMAIL || "reservations@darbarai.com"}>`;
 
   // Send in batches of 50 (Resend free plan limit)
   const BATCH = 50;
@@ -57,21 +53,13 @@ export default defineEventHandler(async (event) => {
   for (let i = 0; i < subscribers.length; i += BATCH) {
     const batch = subscribers.slice(i, i + BATCH);
     await Promise.all(
-      batch.map((sub) =>
-        resend.emails.send({
-          from: fromAddress,
-          to: sub.email,
-          subject,
-          html: `
-            ${content_html}
-            <hr style="margin:40px 0;border:none;border-top:1px solid #e7e5e4"/>
-            <p style="font-size:12px;color:#a8a29e;text-align:center">
-              Vous recevez cet email car vous êtes abonné à la newsletter Dar Baraï.<br/>
-              <a href="${siteUrl}/account" style="color:#a8a29e">Se désabonner</a>
-            </p>
-          `,
-        }),
-      ),
+      batch.map((sub) => {
+        const { html } = templates.newsletter(
+          content_html,
+          unsubscribeUrl(sub.email, config.resendApiKey ?? "fallback"),
+        );
+        return resend.emails.send({ from: FROM, to: sub.email, subject, html });
+      }),
     );
     sentCount += batch.length;
   }

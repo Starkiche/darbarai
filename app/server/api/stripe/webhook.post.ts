@@ -1,6 +1,6 @@
 import Stripe from "stripe";
 import { serverSupabaseServiceRole } from "#supabase/server";
-import { Resend } from "resend";
+import { templates, sendEmail } from "~/server/utils/emailTemplates";
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
@@ -61,41 +61,25 @@ export default defineEventHandler(async (event) => {
       });
     if (availError) console.error("[webhook] Availability insert failed", availError);
 
-    // Send confirmation email via Resend
     if (config.resendApiKey) {
       try {
-        const resend = new Resend(config.resendApiKey);
-        const { email, full_name } = reservation.profile as { email: string; full_name: string | null };
+        const { email, full_name } = reservation.profile as { email: string; full_name: string };
         const riad = reservation.riad as { name: string };
         const nights = Math.round(
-          (new Date(reservation.check_out).getTime() - new Date(reservation.check_in).getTime()) /
-            (1000 * 60 * 60 * 24),
+          (new Date(reservation.check_out).getTime() - new Date(reservation.check_in).getTime()) / 86400000,
         );
-        const totalEur = (reservation.total_price / 100).toFixed(2);
-        const fromEmail = process.env.RESEND_FROM_EMAIL ?? "reservations@darbarai.com";
-        const fromName = process.env.RESEND_FROM_NAME ?? "Dar Baraï";
-
-        await resend.emails.send({
-          from: `${fromName} <${fromEmail}>`,
-          to: email,
-          subject: `Votre réservation est confirmée – ${riad.name}`,
-          html: `
-            <div style="font-family:Georgia,serif;max-width:600px;margin:auto;color:#1c1917">
-              <h1 style="color:#b45309">Réservation confirmée ✓</h1>
-              <p>Bonjour ${full_name ?? ""},</p>
-              <p>Votre réservation au <strong>${riad.name}</strong> est bien confirmée.</p>
-              <table style="width:100%;border-collapse:collapse;margin:24px 0">
-                <tr><td style="padding:8px 0;border-bottom:1px solid #e7e5e4"><strong>Arrivée</strong></td><td style="padding:8px 0;border-bottom:1px solid #e7e5e4">${reservation.check_in}</td></tr>
-                <tr><td style="padding:8px 0;border-bottom:1px solid #e7e5e4"><strong>Départ</strong></td><td style="padding:8px 0;border-bottom:1px solid #e7e5e4">${reservation.check_out}</td></tr>
-                <tr><td style="padding:8px 0;border-bottom:1px solid #e7e5e4"><strong>Durée</strong></td><td style="padding:8px 0;border-bottom:1px solid #e7e5e4">${nights} nuit${nights > 1 ? "s" : ""}</td></tr>
-                <tr><td style="padding:8px 0;border-bottom:1px solid #e7e5e4"><strong>Voyageurs</strong></td><td style="padding:8px 0;border-bottom:1px solid #e7e5e4">${reservation.guests}</td></tr>
-                <tr><td style="padding:8px 0"><strong>Total</strong></td><td style="padding:8px 0">${totalEur} €</td></tr>
-              </table>
-              <p>Nous avons hâte de vous accueillir à Marrakech.</p>
-              <p style="color:#78716c;font-size:14px">Dar Baraï · Marrakech, Maroc · reservations@darbarai.com</p>
-            </div>
-          `,
-        });
+        const emailData = {
+          clientName: full_name ?? "",
+          clientEmail: email,
+          riadName: riad.name,
+          checkIn: reservation.check_in,
+          checkOut: reservation.check_out,
+          nights,
+          guests: reservation.guests,
+          totalEur: (reservation.total_price / 100).toFixed(2),
+          reservationId: reservation.id,
+        };
+        await sendEmail(config.resendApiKey, email, templates.reservationConfirmed(emailData));
       } catch (emailErr) {
         console.error("[webhook] Email send failed", emailErr);
       }
