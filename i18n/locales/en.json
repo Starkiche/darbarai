@@ -223,11 +223,34 @@
     "riads_title": "Our Riads – Dar Baraï & Dar Tanawi",
     "account_title": "My account – Dar Baraï"
   },
+  "legal": {
+    "seo_title": "Legal Notice – Dar Baraï",
+    "title": "Legal Notice",
+    "editor_title": "Website Publisher",
+    "editor_name": "DAR BARAÏ",
+    "editor_legal_form": "Single-Member Limited Liability Company (SARL AU) — Moroccan law",
+    "editor_rc": "RC: 154065 — Commercial Court of Marrakech",
+    "editor_ice": "ICE: 003577950000075",
+    "editor_capital": "Share capital: 10,000 MAD",
+    "editor_address": "Place la Liberté, Corner Av. My Hassan and Av. Mohamed V, Rés. Berdaï, Blg. B, Apt. 2, Marrakech, Morocco",
+    "editor_email": "contact@darbarai.com",
+    "publication_title": "Publication Director",
+    "publication_name": "Nathalie Couderc",
+    "hosting_title": "Hosting",
+    "hosting_name": "Vercel Inc.",
+    "hosting_address": "340 Pine Street, Suite 701, San Francisco, CA 94104, United States",
+    "hosting_url": "https://vercel.com",
+    "data_title": "Personal Data",
+    "data_text": "Information collected on this site (name, email address) is used solely for reservation management and customer relations. It is neither sold nor shared with third parties. You have the right to access, correct, or delete your personal data by contacting us at contact@darbarai.com.",
+    "cookies_title": "Cookies",
+    "cookies_text": "This site uses technical cookies required for its operation (authentication, session). No advertising or third-party tracking cookies are used."
+  },
   "footer": {
     "tagline": "Two exceptional riads in the heart of the Marrakech medina.",
     "links_title": "Our riads",
     "contact_title": "Contact",
-    "rights": "All rights reserved."
+    "rights": "All rights reserved.",
+    "legal": "Legal Notice"
   },
   "errors": {
     "generic": "Something went wrong. Please try again.",

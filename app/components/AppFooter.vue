@@ -99,6 +99,12 @@
           © {{ new Date().getFullYear() }} Dar Baraï & Dar Tanawi.
           {{ t("footer.rights") }}
         </p>
+        <NuxtLink
+          :to="localePath('/legal')"
+          class="hover:text-white transition-colors"
+        >
+          {{ t("footer.legal") }}
+        </NuxtLink>
         <div class="flex gap-4">
           <button
             v-for="loc in availableLocales"
