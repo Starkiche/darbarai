@@ -233,7 +233,7 @@
     "editor_ice": "ICE: 003577950000075",
     "editor_capital": "Share capital: 10,000 MAD",
     "editor_address": "Place la Liberté, Corner Av. My Hassan and Av. Mohamed V, Rés. Berdaï, Blg. B, Apt. 2, Marrakech, Morocco",
-    "editor_email": "contact@darbarai.com",
+    "editor_email": "contact{'@'}darbarai.com",
     "publication_title": "Publication Director",
     "publication_name": "Nathalie Couderc",
     "hosting_title": "Hosting",
@@ -241,7 +241,7 @@
     "hosting_address": "340 Pine Street, Suite 701, San Francisco, CA 94104, United States",
     "hosting_url": "https://vercel.com",
     "data_title": "Personal Data",
-    "data_text": "Information collected on this site (name, email address) is used solely for reservation management and customer relations. It is neither sold nor shared with third parties. You have the right to access, correct, or delete your personal data by contacting us at contact@darbarai.com.",
+    "data_text": "Information collected on this site (name, email address) is used solely for reservation management and customer relations. It is neither sold nor shared with third parties. You have the right to access, correct, or delete your personal data by contacting us at contact{'@'}darbarai.com.",
     "cookies_title": "Cookies",
     "cookies_text": "This site uses technical cookies required for its operation (authentication, session). No advertising or third-party tracking cookies are used."
   },
