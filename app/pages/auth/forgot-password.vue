@@ -1,12 +1,6 @@
 <template>
   <div class="text-center">
     <NuxtLink to="/" class="inline-block mb-8">
-      <img
-        src="/images/logo.svg"
-        alt="Dar Baraï"
-        class="h-12 mx-auto"
-        onerror="this.style.display = 'none'"
-      />
       <span class="text-2xl font-playfair text-terracotta-700">Dar Baraï</span>
     </NuxtLink>
 
