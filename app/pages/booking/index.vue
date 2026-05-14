@@ -146,6 +146,9 @@
             <span class="text-xl">💳</span>
             <p class="font-medium text-sm text-stone-800">{{ t("booking.method_card") }}</p>
             <p class="text-xs text-stone-500">{{ t("booking.method_card_desc") }}</p>
+            <p class="text-xs font-medium text-green-600 flex items-center gap-1 pt-1">
+              <span>✓</span> {{ t("booking.method_card_status") }}
+            </p>
           </button>
           <button
             type="button"
@@ -160,6 +163,9 @@
             <span class="text-xl">💬</span>
             <p class="font-medium text-sm text-stone-800">{{ t("booking.method_later") }}</p>
             <p class="text-xs text-stone-500">{{ t("booking.method_later_desc") }}</p>
+            <p class="text-xs font-medium text-amber-600 flex items-center gap-1 pt-1">
+              <span>⏳</span> {{ t("booking.method_later_status") }}
+            </p>
           </button>
         </div>
       </div>

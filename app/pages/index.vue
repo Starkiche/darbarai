@@ -41,7 +41,7 @@
   </section>
 
   <!-- Localisation -->
-  <section class="py-20 px-4 max-w-7xl mx-auto">
+  <section class="py-20 px-4 max-w-3xl mx-auto">
     <h2 class="section-title text-center mb-3">
       {{ t("home.location_title") }}
     </h2>

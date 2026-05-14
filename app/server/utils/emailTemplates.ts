@@ -1,5 +1,23 @@
 import { Resend } from "resend";
 import { createHmac } from "crypto";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
+export const getAdminEmails = async (supabase: SupabaseClient): Promise<string[]> => {
+  const { data } = await supabase
+    .from("profiles")
+    .select("email")
+    .eq("role", "admin");
+  return (data ?? []).map((p: any) => p.email).filter(Boolean);
+};
+
+export const sendToAdmins = async (
+  supabase: SupabaseClient,
+  apiKey: string,
+  template: { subject: string; html: string },
+) => {
+  const emails = await getAdminEmails(supabase);
+  await Promise.all(emails.map((email) => sendEmail(apiKey, email, template)));
+};
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -156,6 +174,17 @@ export const templates = {
       <p>Votre réservation au <strong>${d.riadName}</strong> (${d.checkIn} → ${d.checkOut}) a bien été annulée.</p>
       <p>Si vous avez des questions, contactez-nous à <a href="mailto:reservations@darbarai.com" style="color:#b45309">reservations@darbarai.com</a>.</p>
       <p style="font-size:13px;color:#78716c">Réf. ${d.reservationId.slice(0, 8)}</p>
+    `),
+  }),
+
+  adminReservationCancelled: (d: ReservationEmailData) => ({
+    subject: `Annulation – ${d.clientName} · ${d.riadName}`,
+    html: layout(`
+      <h1 style="margin:0 0 8px;font-size:24px;color:#dc2626">Réservation annulée</h1>
+      <p>Un client a annulé sa réservation.</p>
+      ${reservationTable(d)}
+      <p><strong>Client :</strong> ${d.clientName} — <a href="mailto:${d.clientEmail}" style="color:#b45309">${d.clientEmail}</a></p>
+      <p style="font-size:13px;color:#78716c">Réf. ${d.reservationId}</p>
     `),
   }),
 

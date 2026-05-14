@@ -103,10 +103,12 @@ const supabase = useSupabaseClient();
 const confirmModal = ref(false);
 
 const doCancel = async () => {
-  await supabase
-    .from("reservations")
-    .update({ status: "cancelled" })
-    .eq("id", props.reservation.id);
+  const { data: { session } } = await supabase.auth.getSession();
+  await $fetch(`/api/reservations/${props.reservation.id}`, {
+    method: "PATCH",
+    headers: session?.access_token ? { Authorization: `Bearer ${session.access_token}` } : {},
+    body: { status: "cancelled" },
+  });
   emit("cancelled");
 };
 

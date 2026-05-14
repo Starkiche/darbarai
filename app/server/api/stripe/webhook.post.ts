@@ -1,6 +1,6 @@
 import Stripe from "stripe";
 import { serverSupabaseServiceRole } from "#supabase/server";
-import { templates, sendEmail } from "~/server/utils/emailTemplates";
+import { templates, sendEmail, sendToAdmins } from "~/server/utils/emailTemplates";
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig();
@@ -80,6 +80,7 @@ export default defineEventHandler(async (event) => {
           reservationId: reservation.id,
         };
         await sendEmail(config.resendApiKey, email, templates.reservationConfirmed(emailData));
+        await sendToAdmins(supabase, config.resendApiKey, templates.adminNewReservation(emailData, "stripe"));
       } catch (emailErr) {
         console.error("[webhook] Email send failed", emailErr);
       }

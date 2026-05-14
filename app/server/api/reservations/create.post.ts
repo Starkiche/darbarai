@@ -1,6 +1,6 @@
 import Stripe from "stripe";
 import { serverSupabaseClient, serverSupabaseUser } from "#supabase/server";
-import { templates, sendEmail } from "~/server/utils/emailTemplates";
+import { templates, sendEmail, sendToAdmins } from "~/server/utils/emailTemplates";
 
 export default defineEventHandler(async (event) => {
   const supabase = await serverSupabaseClient(event);
@@ -160,7 +160,7 @@ export default defineEventHandler(async (event) => {
       const checkInDate2 = new Date(check_in);
       const checkOutDate2 = new Date(check_out);
       const nights2 = Math.round((checkOutDate2.getTime() - checkInDate2.getTime()) / 86400000);
-      await sendEmail(config.resendApiKey, user.email!, templates.reservationRequest({
+      const emailData = {
         clientName: user.user_metadata?.full_name ?? "",
         clientEmail: user.email!,
         riadName: riad.name,
@@ -170,7 +170,9 @@ export default defineEventHandler(async (event) => {
         guests,
         totalEur: (total_price / 100).toFixed(2),
         reservationId: reservation.id,
-      }));
+      };
+      await sendEmail(config.resendApiKey, user.email!, templates.reservationRequest(emailData));
+      await sendToAdmins(supabase, config.resendApiKey, templates.adminNewReservation(emailData, "later"));
     } catch (emailErr) {
       console.error("[create] Email send failed:", emailErr);
     }
