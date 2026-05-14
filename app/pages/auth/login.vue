@@ -85,6 +85,7 @@
 definePageMeta({ layout: "auth" });
 const { signInWithEmail } = useAuth();
 const { t } = useI18n();
+const localePath = useLocalePath();
 const route = useRoute();
 
 const redirect = route.query.redirect as string | undefined;
@@ -112,7 +113,7 @@ const onSubmit = async () => {
   } else if (redirect) {
     await navigateTo(redirect);
   } else {
-    useRouter().back();
+    await navigateTo(localePath("/"));
   }
 };
 
