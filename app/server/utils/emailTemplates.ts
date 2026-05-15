@@ -215,5 +215,10 @@ export const sendEmail = async (
   template: { subject: string; html: string },
 ) => {
   const resend = new Resend(apiKey);
-  await resend.emails.send({ from: FROM, to, subject: template.subject, html: template.html });
+  const { data, error } = await resend.emails.send({ from: FROM, to, subject: template.subject, html: template.html });
+  if (error) {
+    console.error(`[sendEmail] Resend error → to=${to} subject="${template.subject}":`, JSON.stringify(error));
+    throw new Error(`Resend: ${JSON.stringify(error)}`);
+  }
+  console.log(`[sendEmail] OK → id=${data?.id} to=${to}`);
 };
