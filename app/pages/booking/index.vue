@@ -127,9 +127,46 @@
             </span>
           </div>
         </template>
+
+        <!-- Code promo -->
+        <div class="pt-2">
+          <div v-if="!appliedPromo" class="flex gap-2">
+            <input
+              v-model="promoCode"
+              type="text"
+              :placeholder="t('booking.promo_placeholder')"
+              class="flex-1 px-3 py-2 text-sm border border-stone-200 rounded-lg focus:ring-2 focus:ring-terracotta-400 focus:border-transparent outline-none uppercase tracking-widest"
+              :disabled="promoValidating"
+              @keydown.enter.prevent="applyPromo"
+            />
+            <button
+              type="button"
+              :disabled="!promoCode.trim() || promoValidating"
+              class="px-4 py-2 text-sm font-medium text-terracotta-700 border border-terracotta-200 rounded-lg hover:bg-terracotta-50 disabled:opacity-40 transition-colors whitespace-nowrap"
+              @click="applyPromo"
+            >
+              {{ promoValidating ? '…' : t('booking.promo_apply') }}
+            </button>
+          </div>
+          <p v-if="promoError" class="text-xs text-red-500 mt-1.5">{{ promoError }}</p>
+          <div v-if="appliedPromo" class="flex items-center justify-between bg-green-50 border border-green-100 rounded-lg px-3 py-2">
+            <div class="text-sm">
+              <span class="font-medium text-green-700">{{ appliedPromo.code }}</span>
+              <span v-if="appliedPromo.type === 'percentage'" class="text-green-600 ml-1.5 text-xs">-{{ appliedPromo.value }}%</span>
+            </div>
+            <button type="button" class="text-green-500 hover:text-green-800 text-sm leading-none ml-3" @click="removePromo">✕</button>
+          </div>
+        </div>
+
+        <!-- Ligne réduction -->
+        <div v-if="appliedPromo" class="flex justify-between text-green-700 text-sm">
+          <span>{{ t('booking.promo_discount') }}</span>
+          <span>-{{ formatPrice(discountAmount) }}</span>
+        </div>
+
         <div class="flex justify-between font-semibold text-stone-800 pt-2 border-t border-sand-200">
           <span>{{ t("common.total") }}</span>
-          <span>{{ formatPrice(totalPrice) }}</span>
+          <span :class="appliedPromo ? 'text-green-700' : ''">{{ formatPrice(finalTotal) }}</span>
         </div>
         <div class="flex items-start gap-2 pt-3 border-t border-sand-200">
           <span class="text-amber-500 shrink-0 mt-0.5">ℹ</span>
@@ -180,9 +217,9 @@
         </div>
       </div>
 
-      <!-- Stripe Elements (v-show pour garder le div dans le DOM au montage) -->
+      <!-- Stripe Elements -->
       <div v-show="method === 'card'" class="p-6 border-b border-stone-100">
-        <div v-if="stripeLoading" class="space-y-3">
+        <div v-if="cardPhase === 'loading'" class="space-y-3">
           <div class="h-10 bg-stone-100 rounded-lg animate-pulse"></div>
           <div class="grid grid-cols-2 gap-3">
             <div class="h-10 bg-stone-100 rounded-lg animate-pulse"></div>
@@ -192,7 +229,7 @@
         <div v-else-if="devMode" class="rounded-xl border border-dashed border-stone-300 p-4 text-center text-sm text-stone-400">
           Stripe non configuré — paiement simulé en dev
         </div>
-        <div v-show="!stripeLoading && !devMode" id="payment-element"></div>
+        <div v-show="cardPhase === 'ready' && !devMode" id="payment-element"></div>
       </div>
 
       <!-- Info "payer plus tard" -->
@@ -205,10 +242,13 @@
         <p v-if="payError" class="text-sm text-red-600">{{ payError }}</p>
         <button
           class="btn-primary w-full py-4 text-base"
-          :disabled="loading || stripeLoading"
+          :disabled="loading || cardPhase === 'loading'"
           @click="pay"
         >
-          {{ loading ? t("common.loading") : (method === "card" ? t("booking.pay_now") : t("booking.confirm_later")) }}
+          <template v-if="loading || cardPhase === 'loading'">{{ t("common.loading") }}</template>
+          <template v-else-if="method === 'card' && cardPhase === 'ready'">{{ t("booking.confirm_payment") }}</template>
+          <template v-else-if="method === 'card'">{{ t("booking.pay_now") }}</template>
+          <template v-else>{{ t("booking.confirm_later") }}</template>
         </button>
         <p v-if="method === 'card'" class="text-center text-xs text-stone-400">
           {{ t("booking.no_charge_yet") }}
@@ -266,20 +306,54 @@ const totalPrice = ref(riad.value.base_price_per_night * nights)
 const priceBreakdown = ref<{ date: string; price: number; source: string }[]>([])
 const pricesVary = computed(() => {
   if (priceBreakdown.value.length === 0) return false
-  const first = priceBreakdown.value[0].price
+  const first = priceBreakdown.value[0]!.price
   return priceBreakdown.value.some(d => d.price !== first)
 })
+
+// Promo code
+const promoCode = ref("")
+const promoValidating = ref(false)
+const promoError = ref("")
+const appliedPromo = ref<{ id: string; code: string; type: string; value: number; discount: number; finalTotal: number } | null>(null)
+
+const discountAmount = computed(() => appliedPromo.value?.discount ?? 0)
+const finalTotal = computed(() => appliedPromo.value?.finalTotal ?? totalPrice.value)
+
+async function applyPromo() {
+  if (!promoCode.value.trim()) return
+  promoValidating.value = true
+  promoError.value = ""
+  appliedPromo.value = null
+  try {
+    const data = await $fetch<{ id: string; code: string; type: string; value: number; discount: number; finalTotal: number }>(
+      "/api/promo/validate",
+      { method: "POST", body: { code: promoCode.value, total: totalPrice.value } }
+    )
+    appliedPromo.value = data
+    promoCode.value = ""
+  } catch (err: any) {
+    promoError.value = err.data?.statusMessage || t("errors.generic")
+  } finally {
+    promoValidating.value = false
+  }
+}
+
+function removePromo() {
+  appliedPromo.value = null
+  promoCode.value = ""
+  promoError.value = ""
+}
 
 const formatDate = (d: string) =>
   format(parseISO(d), locale.value === "fr" ? "EEEE d MMMM yyyy" : "EEEE, MMMM d yyyy")
 
-// Paiement
+// Payment state
 const method = ref<"card" | "later">("card")
 const laterSuccess = ref(false)
-const stripeLoading = ref(true)
 const devMode = ref(false)
 const loading = ref(false)
 const payError = ref<string | false>(false)
+const cardPhase = ref<"idle" | "loading" | "ready">("idle")
 
 const contactEmail = (config.public as any).contactEmail || "contact@darbarai.com"
 const whatsappLink = computed(() => {
@@ -297,7 +371,7 @@ let reservationId = (route.query.reservationId as string) || ""
 let accessToken = ""
 const reservationCompleted = ref(false)
 
-// Si on revient sur cette page après avoir confirmé "payer plus tard"
+// Returning after "pay later" redirect
 if (route.query.done === "true" && reservationId) {
   laterSuccess.value = true
   reservationCompleted.value = true
@@ -323,72 +397,23 @@ onBeforeUnmount(async () => {
 onMounted(async () => {
   window.addEventListener("beforeunload", deleteIfAbandoned)
 
-  // Déjà complété (redirection après "payer plus tard") — ne pas recréer
-  if (laterSuccess.value) {
-    stripeLoading.value = false
-    return
-  }
+  if (laterSuccess.value) return
 
   try {
     const { data: { session } } = await supabase.auth.getSession()
     accessToken = session?.access_token ?? ""
-    const data = await $fetch<{ clientSecret: string | null; reservationId: string; priceBreakdown: { date: string; price: number; source: string }[] }>(
-      "/api/reservations/create",
-      {
-        method: "POST",
-        headers: session?.access_token
-          ? { Authorization: `Bearer ${session.access_token}` }
-          : {},
-        body: {
-          riad_id: riadId,
-          check_in: checkIn,
-          check_out: checkOut,
-          guests,
-          special_requests: specialRequests || undefined,
-        },
-      }
+
+    // Fetch dynamic pricing (no reservation created yet)
+    const pricing = await $fetch<{ total: number; breakdown: { date: string; price: number; source: string }[] }>(
+      "/api/reservations/pricing",
+      { query: { riad_id: riadId, check_in: checkIn, check_out: checkOut } }
     )
-
-    reservationId = data.reservationId
-    if (data.priceBreakdown?.length) {
-      priceBreakdown.value = data.priceBreakdown
-      totalPrice.value = data.priceBreakdown.reduce((s, d) => s + d.price, 0)
+    if (pricing.breakdown?.length) {
+      priceBreakdown.value = pricing.breakdown
+      totalPrice.value = pricing.total
     }
-
-    if (!data.clientSecret) {
-      devMode.value = true
-      stripeLoading.value = false
-      return
-    }
-
-    const { loadStripe } = await import("@stripe/stripe-js")
-    stripe = await loadStripe(config.public.stripePublicKey as string)
-    if (!stripe) return
-
-    elements = stripe.elements({
-      clientSecret: data.clientSecret,
-      appearance: {
-        theme: "stripe",
-        variables: {
-          colorPrimary: "#ce4123",
-          colorBackground: "#ffffff",
-          colorText: "#1c1917",
-          colorDanger: "#dc2626",
-          fontFamily: "inherit",
-          borderRadius: "8px",
-          spacingUnit: "4px",
-        },
-      },
-    })
-
-    const paymentElement = elements.create("payment")
-    paymentElement.mount("#payment-element")
-
-    stripeLoading.value = false
   } catch (err) {
     console.error(err)
-    payError.value = t("errors.generic")
-    stripeLoading.value = false
   }
 })
 
@@ -396,34 +421,114 @@ onUnmounted(() => {
   window.removeEventListener("beforeunload", deleteIfAbandoned)
 })
 
+async function createReservation() {
+  if (!accessToken) {
+    const { data: { session } } = await supabase.auth.getSession()
+    accessToken = session?.access_token ?? ""
+  }
+
+  const data = await $fetch<{ clientSecret: string | null; reservationId: string; priceBreakdown: { date: string; price: number; source: string }[] }>(
+    "/api/reservations/create",
+    {
+      method: "POST",
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+      body: {
+        riad_id: riadId,
+        check_in: checkIn,
+        check_out: checkOut,
+        guests,
+        special_requests: specialRequests || undefined,
+        promo_code: appliedPromo.value?.code || undefined,
+      },
+    }
+  )
+
+  reservationId = data.reservationId
+  return data
+}
+
 const pay = async () => {
   loading.value = true
   payError.value = false
 
+  // "Pay later" flow
   if (method.value === "later") {
-    reservationCompleted.value = true
     try {
-      await $fetch(`/api/reservations/notify/${reservationId}`, {
-        method: "POST",
-        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+      if (!reservationId) await createReservation()
+      reservationCompleted.value = true
+      try {
+        await $fetch(`/api/reservations/notify/${reservationId}`, {
+          method: "POST",
+          headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+        })
+      } catch (e) {
+        console.error("[booking] notify email failed", e)
+      }
+      loading.value = false
+      await navigateTo({
+        path: route.path,
+        query: { ...route.query, done: "true", reservationId },
       })
-    } catch (e) {
-      console.error("[booking] notify email failed", e)
+    } catch (err: any) {
+      payError.value = err.data?.statusMessage || t("errors.generic")
+      loading.value = false
     }
-    loading.value = false
-    await navigateTo({
-      path: route.path,
-      query: { ...route.query, done: "true", reservationId },
-    })
     return
   }
 
+  // Card phase 1: create reservation + mount Stripe
+  if (cardPhase.value === "idle") {
+    cardPhase.value = "loading"
+    try {
+      const data = await createReservation()
+
+      if (!data.clientSecret) {
+        devMode.value = true
+        cardPhase.value = "ready"
+        loading.value = false
+        return
+      }
+
+      const { loadStripe } = await import("@stripe/stripe-js")
+      stripe = await loadStripe(config.public.stripePublicKey as string)
+      if (!stripe) throw new Error("Stripe failed to load")
+
+      elements = stripe.elements({
+        clientSecret: data.clientSecret,
+        appearance: {
+          theme: "stripe",
+          variables: {
+            colorPrimary: "#ce4123",
+            colorBackground: "#ffffff",
+            colorText: "#1c1917",
+            colorDanger: "#dc2626",
+            fontFamily: "inherit",
+            borderRadius: "8px",
+            spacingUnit: "4px",
+          },
+        },
+      })
+
+      cardPhase.value = "ready"
+      await nextTick()
+      const paymentElement = elements.create("payment")
+      paymentElement.mount("#payment-element")
+    } catch (err: any) {
+      payError.value = err.data?.statusMessage || t("errors.generic")
+      cardPhase.value = "idle"
+    }
+    loading.value = false
+    return
+  }
+
+  // Dev mode: skip Stripe
   if (devMode.value) {
     reservationCompleted.value = true
     await navigateTo(`/account?payment=success&reservation=${reservationId}`)
     return
   }
 
+  // Card phase 2: confirm payment
   if (!stripe || !elements) {
     loading.value = false
     return

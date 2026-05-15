@@ -99,6 +99,10 @@ const IconTag = defineComponent({
   template: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"/></svg>`,
 });
 
+const IconPromo = defineComponent({
+  template: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/></svg>`,
+});
+
 const navItems = [
   { to: "/admin", label: t("admin.title"), icon: IconDashboard },
   {
@@ -111,6 +115,7 @@ const navItems = [
   { to: "/admin/amenities", label: "Équipements", icon: IconTag },
   { to: "/admin/clients", label: t("admin.clients"), icon: IconUsers },
   { to: "/admin/pricing", label: "Tarifs", icon: IconCurrency },
+  { to: "/admin/promo", label: "Promos", icon: IconPromo },
   { to: "/admin/newsletter", label: t("admin.newsletter"), icon: IconMail },
   { to: "/admin/emails", label: "Emails", icon: IconMailDoc },
 ];

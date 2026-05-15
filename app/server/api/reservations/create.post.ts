@@ -1,5 +1,5 @@
 import Stripe from "stripe";
-import { serverSupabaseClient, serverSupabaseUser } from "#supabase/server";
+import { serverSupabaseClient, serverSupabaseUser, serverSupabaseServiceRole } from "#supabase/server";
 import { getTotalPrice } from "~/server/utils/pricing";
 
 export default defineEventHandler(async (event) => {
@@ -20,12 +20,13 @@ export default defineEventHandler(async (event) => {
 
   // 2. Body validation
   const body = await readBody(event);
-  const { riad_id, check_in, check_out, guests, special_requests } = body as {
+  const { riad_id, check_in, check_out, guests, special_requests, promo_code } = body as {
     riad_id: string;
     check_in: string;
     check_out: string;
     guests: number;
     special_requests?: string;
+    promo_code?: string;
   };
 
   if (!riad_id || !check_in || !check_out || !guests) {
@@ -108,7 +109,36 @@ export default defineEventHandler(async (event) => {
     riad.base_price_per_night,
   );
 
-  // 6. Create reservation in DB (status: pending)
+  // 6. Appliquer le code promo si fourni
+  const admin = serverSupabaseServiceRole(event);
+  let finalPrice = total_price;
+  let discountAmount = 0;
+  let promoCodeId: string | null = null;
+
+  if (promo_code) {
+    const today = new Date().toISOString().slice(0, 10);
+    const { data: promo } = await (admin as any)
+      .from("promo_codes")
+      .select("*")
+      .eq("code", promo_code.trim().toUpperCase())
+      .eq("active", true)
+      .single();
+
+    if (
+      promo &&
+      (!promo.valid_from || promo.valid_from <= today) &&
+      (!promo.valid_until || promo.valid_until >= today) &&
+      (promo.max_uses === null || promo.uses_count < promo.max_uses)
+    ) {
+      discountAmount = promo.type === "percentage"
+        ? Math.round(total_price * promo.value / 100)
+        : Math.min(promo.value, total_price);
+      finalPrice = total_price - discountAmount;
+      promoCodeId = promo.id;
+    }
+  }
+
+  // 7. Create reservation in DB (status: pending)
   const config = useRuntimeConfig();
   const initialStatus = "pending";
 
@@ -120,7 +150,9 @@ export default defineEventHandler(async (event) => {
       check_in,
       check_out,
       guests,
-      total_price,
+      total_price: finalPrice,
+      discount_amount: discountAmount,
+      promo_code_id: promoCodeId,
       status: initialStatus,
       special_requests: special_requests ?? null,
     })
@@ -134,7 +166,12 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  // 7. Stripe PaymentIntent (si clé configurée)
+  // Incrémenter uses_count du code promo
+  if (promoCodeId) {
+    await (admin as any).rpc("increment_promo_uses", { promo_id: promoCodeId });
+  }
+
+  // 8. Stripe PaymentIntent (si clé configurée)
   if (config.stripeSecretKey) {
     try {
       const stripe = new Stripe(config.stripeSecretKey, {

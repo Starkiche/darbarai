@@ -109,7 +109,11 @@
     "later_success_desc": "Votre réservation est en attente de confirmation. La gérante va vous contacter prochainement pour convenir du règlement.",
     "contact_whatsapp": "Contacter sur WhatsApp",
     "contact_email": "Contacter par email",
-    "tourist_tax": "Une taxe de séjour obligatoire de 26 Dh (~2,50 €) par nuit et par personne sera à régler directement sur place. Elle est collectée par la ville de Marrakech."
+    "tourist_tax": "Une taxe de séjour obligatoire de 26 Dh (~2,50 €) par nuit et par personne sera à régler directement sur place. Elle est collectée par la ville de Marrakech.",
+    "promo_placeholder": "Code promo",
+    "promo_apply": "Appliquer",
+    "promo_discount": "Réduction",
+    "confirm_payment": "Confirmer le paiement"
   },
   "auth": {
     "login_title": "Connexion",

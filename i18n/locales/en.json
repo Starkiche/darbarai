@@ -108,7 +108,11 @@
     "later_success_desc": "Your reservation is pending confirmation. The owner will contact you shortly to arrange payment.",
     "contact_whatsapp": "Contact on WhatsApp",
     "contact_email": "Contact by email",
-    "tourist_tax": "A mandatory tourist tax of 26 Dhs (~€2.50) per night per person is payable directly on-site. It is collected by the city of Marrakech."
+    "tourist_tax": "A mandatory tourist tax of 26 Dhs (~€2.50) per night per person is payable directly on-site. It is collected by the city of Marrakech.",
+    "promo_placeholder": "Promo code",
+    "promo_apply": "Apply",
+    "promo_discount": "Discount",
+    "confirm_payment": "Confirm payment"
   },
   "auth": {
     "login_title": "Sign in",
