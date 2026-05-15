@@ -369,6 +369,14 @@ const pay = async () => {
 
   if (method.value === "later") {
     reservationCompleted.value = true
+    try {
+      await $fetch(`/api/reservations/${reservationId}/notify`, {
+        method: "POST",
+        headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
+      })
+    } catch (e) {
+      console.error("[booking] notify email failed", e)
+    }
     laterSuccess.value = true
     loading.value = false
     return

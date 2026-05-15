@@ -1,4 +1,4 @@
-import { serverSupabaseClient } from "#supabase/server";
+import { serverSupabaseClient, serverSupabaseServiceRole } from "#supabase/server";
 import { templates, sendEmail, sendToAdmins } from "~/server/utils/emailTemplates";
 
 export default defineEventHandler(async (event) => {
@@ -61,7 +61,8 @@ export default defineEventHandler(async (event) => {
     } catch (e) { console.error("[patch] client email failed", e); }
 
     try {
-      await sendToAdmins(supabase, config.resendApiKey, templates.adminReservationCancelled(emailData));
+      const adminSupabase = serverSupabaseServiceRole(event);
+      await sendToAdmins(adminSupabase, config.resendApiKey, templates.adminReservationCancelled(emailData));
     } catch (e) { console.error("[patch] admin email failed", e); }
   }
 
