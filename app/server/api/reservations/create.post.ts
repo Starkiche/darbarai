@@ -1,5 +1,6 @@
 import Stripe from "stripe";
 import { serverSupabaseClient, serverSupabaseUser } from "#supabase/server";
+import { getTotalPrice } from "~/server/utils/pricing";
 
 export default defineEventHandler(async (event) => {
   const supabase = await serverSupabaseClient(event);
@@ -90,7 +91,7 @@ export default defineEventHandler(async (event) => {
     return { clientSecret: null, reservationId: ownPending.id };
   }
 
-  // 5. Calculate total (centimes)
+  // 5. Calculate total (centimes) avec prix dynamique
   const checkInDate = new Date(check_in);
   const checkOutDate = new Date(check_out);
   const nights = Math.round(
@@ -98,7 +99,14 @@ export default defineEventHandler(async (event) => {
   );
   if (nights < 1)
     throw createError({ statusCode: 400, statusMessage: "Invalid dates" });
-  const total_price = riad.base_price_per_night * nights;
+
+  const { total: total_price, breakdown: priceBreakdown } = await getTotalPrice(
+    supabase,
+    riad_id,
+    check_in,
+    check_out,
+    riad.base_price_per_night,
+  );
 
   // 6. Create reservation in DB (status: pending)
   const config = useRuntimeConfig();
@@ -146,12 +154,11 @@ export default defineEventHandler(async (event) => {
         .update({ stripe_payment_intent_id: paymentIntent.id })
         .eq("id", reservation.id);
 
-      return { clientSecret: paymentIntent.client_secret, reservationId: reservation.id };
+      return { clientSecret: paymentIntent.client_secret, reservationId: reservation.id, priceBreakdown };
     } catch (stripeErr: any) {
       console.error("[create] Stripe error:", stripeErr?.message);
-      // Stripe mal configuré → fallback sans paiement en ligne
     }
   }
 
-  return { clientSecret: null, reservationId: reservation.id };
+  return { clientSecret: null, reservationId: reservation.id, priceBreakdown };
 });

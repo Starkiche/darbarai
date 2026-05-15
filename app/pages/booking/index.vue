@@ -113,10 +113,20 @@
 
       <!-- Prix -->
       <div class="p-6 space-y-3 border-b border-stone-100 bg-sand-50">
-        <div class="flex justify-between text-stone-600 text-sm">
-          <span>{{ formatPrice(riad.base_price_per_night) }} × {{ t("booking.nights", nights) }}</span>
+        <!-- Prix uniforme -->
+        <div v-if="!pricesVary" class="flex justify-between text-stone-600 text-sm">
+          <span>{{ formatPrice(priceBreakdown[0]?.price ?? riad.base_price_per_night) }} × {{ t("booking.nights", nights) }}</span>
           <span>{{ formatPrice(totalPrice) }}</span>
         </div>
+        <!-- Prix variables : détail nuit par nuit -->
+        <template v-else>
+          <div v-for="day in priceBreakdown" :key="day.date" class="flex justify-between text-stone-600 text-sm">
+            <span class="text-stone-500">{{ formatDate(day.date) }}</span>
+            <span :class="day.source === 'override' ? 'text-amber-700' : day.source === 'season' ? 'text-blue-700' : ''">
+              {{ formatPrice(day.price) }}
+            </span>
+          </div>
+        </template>
         <div class="flex justify-between font-semibold text-stone-800 pt-2 border-t border-sand-200">
           <span>{{ t("common.total") }}</span>
           <span>{{ formatPrice(totalPrice) }}</span>
@@ -252,7 +262,13 @@ const riadName = computed(() =>
 )
 
 const nights = differenceInCalendarDays(parseISO(checkOut), parseISO(checkIn))
-const totalPrice = riad.value.base_price_per_night * nights
+const totalPrice = ref(riad.value.base_price_per_night * nights)
+const priceBreakdown = ref<{ date: string; price: number; source: string }[]>([])
+const pricesVary = computed(() => {
+  if (priceBreakdown.value.length === 0) return false
+  const first = priceBreakdown.value[0].price
+  return priceBreakdown.value.some(d => d.price !== first)
+})
 
 const formatDate = (d: string) =>
   format(parseISO(d), locale.value === "fr" ? "EEEE d MMMM yyyy" : "EEEE, MMMM d yyyy")
@@ -316,7 +332,7 @@ onMounted(async () => {
   try {
     const { data: { session } } = await supabase.auth.getSession()
     accessToken = session?.access_token ?? ""
-    const data = await $fetch<{ clientSecret: string | null; reservationId: string }>(
+    const data = await $fetch<{ clientSecret: string | null; reservationId: string; priceBreakdown: { date: string; price: number; source: string }[] }>(
       "/api/reservations/create",
       {
         method: "POST",
@@ -334,6 +350,10 @@ onMounted(async () => {
     )
 
     reservationId = data.reservationId
+    if (data.priceBreakdown?.length) {
+      priceBreakdown.value = data.priceBreakdown
+      totalPrice.value = data.priceBreakdown.reduce((s, d) => s + d.price, 0)
+    }
 
     if (!data.clientSecret) {
       devMode.value = true

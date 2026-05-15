@@ -84,6 +84,9 @@ const IconMail = defineComponent({
 const IconMailDoc = defineComponent({
   template: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>`,
 });
+const IconCurrency = defineComponent({
+  template: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`,
+});
 
 const IconHome = defineComponent({
   template: `<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H5a1 1 0 01-1-1V9.5z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 21V12h6v9"/></svg>`,
@@ -107,6 +110,7 @@ const navItems = [
   { to: "/admin/services", label: t("admin.services"), icon: IconStar },
   { to: "/admin/amenities", label: "Équipements", icon: IconTag },
   { to: "/admin/clients", label: t("admin.clients"), icon: IconUsers },
+  { to: "/admin/pricing", label: "Tarifs", icon: IconCurrency },
   { to: "/admin/newsletter", label: t("admin.newsletter"), icon: IconMail },
   { to: "/admin/emails", label: "Emails", icon: IconMailDoc },
 ];
