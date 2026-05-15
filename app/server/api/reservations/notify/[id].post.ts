@@ -19,7 +19,7 @@ export default defineEventHandler(async (event) => {
 
   const { data: reservation, error: resErr } = await (admin as any)
     .from("reservations")
-    .select("*, riad:riads(name), profile:profiles(full_name, email)")
+    .select("*, riad:riads(name), profile:profiles(full_name, email, phone)")
     .eq("id", id)
     .eq("user_id", user.id)
     .single();
@@ -35,7 +35,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const riad = reservation.riad as { name: string };
-  const profile = reservation.profile as { full_name: string; email: string | null };
+  const profile = reservation.profile as { full_name: string; email: string | null; phone?: string | null };
   console.log(`${tag} profile.email from DB=${profile.email}`);
 
   // Fallback : récupère l'email depuis auth si profiles.email est null
@@ -57,6 +57,7 @@ export default defineEventHandler(async (event) => {
   const emailData = {
     clientName: profile.full_name ?? "",
     clientEmail,
+    clientPhone: profile.phone ?? null,
     riadName: riad.name,
     checkIn: reservation.check_in,
     checkOut: reservation.check_out,

@@ -38,6 +38,7 @@ export const sendToAdmins = async (
 export interface ReservationEmailData {
   clientName: string;
   clientEmail: string;
+  clientPhone?: string | null;
   riadName: string;
   checkIn: string;
   checkOut: string;
@@ -138,13 +139,20 @@ export const templates = {
   }),
 
   adminNewReservation: (d: ReservationEmailData, mode: "stripe" | "later") => ({
-    subject: `Nouvelle réservation – ${d.riadName} (${mode === "later" ? "paiement à convenir" : "payée en ligne"})`,
+    subject: mode === "later"
+      ? `Demande de réservation – ${d.riadName}`
+      : `Nouvelle réservation payée – ${d.riadName}`,
     html: layout(`
-      <h1 style="margin:0 0 8px;font-size:24px;color:#1c1917">Nouvelle réservation</h1>
+      <h1 style="margin:0 0 8px;font-size:24px;color:#1c1917">${mode === "later" ? "Demande de réservation" : "Nouvelle réservation"}</h1>
       <p>Mode de paiement : <strong>${mode === "later" ? "à convenir" : "carte bancaire"}</strong></p>
       ${reservationTable(d)}
-      <p><strong>Client :</strong> ${d.clientName} — <a href="mailto:${d.clientEmail}" style="color:#b45309">${d.clientEmail}</a></p>
-      <p style="font-size:13px;color:#78716c">Réf. ${d.reservationId}</p>
+      <p><strong>Client :</strong> ${d.clientName}</p>
+      <p style="margin:4px 0">
+        📧 <a href="mailto:${d.clientEmail}" style="color:#b45309">${d.clientEmail}</a>
+        ${d.clientPhone ? `&nbsp;·&nbsp; 📞 <a href="tel:${d.clientPhone}" style="color:#b45309">${d.clientPhone}</a>` : ""}
+      </p>
+      ${mode === "later" ? `<p style="margin:16px 0 4px;padding:12px 16px;background:#fef3c7;border-left:3px solid #f59e0b;border-radius:4px;font-size:14px">Merci de contacter le client par email ou téléphone pour convenir du règlement.</p>` : ""}
+      <p style="font-size:13px;color:#78716c;margin-top:16px">Réf. ${d.reservationId}</p>
     `),
   }),
 
