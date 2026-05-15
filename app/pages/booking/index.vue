@@ -370,7 +370,7 @@ const pay = async () => {
   if (method.value === "later") {
     reservationCompleted.value = true
     try {
-      await $fetch(`/api/reservations/${reservationId}/notify`, {
+      await $fetch(`/api/reservations/notify/${reservationId}`, {
         method: "POST",
         headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
       })

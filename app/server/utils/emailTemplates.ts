@@ -3,11 +3,25 @@ import { createHmac } from "crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 export const getAdminEmails = async (supabase: SupabaseClient): Promise<string[]> => {
-  const { data } = await supabase
+  const { data } = await (supabase as any)
     .from("profiles")
-    .select("email")
+    .select("id, email")
     .eq("role", "admin");
-  return (data ?? []).map((p: any) => p.email).filter(Boolean);
+  const profiles: { id: string; email: string | null }[] = data ?? [];
+
+  const emails: string[] = [];
+  for (const p of profiles) {
+    if (p.email) {
+      emails.push(p.email);
+    } else {
+      // profiles.email peut être null si le trigger ne le copie pas — fallback auth
+      try {
+        const { data: authData } = await (supabase as any).auth.admin.getUserById(p.id);
+        if (authData?.user?.email) emails.push(authData.user.email);
+      } catch {}
+    }
+  }
+  return emails;
 };
 
 export const sendToAdmins = async (
