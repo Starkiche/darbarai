@@ -205,6 +205,10 @@ const supabase = useSupabaseClient();
 
 const getToken = async () => {
   const { data } = await supabase.auth.getSession();
+  if (data.session?.expires_at && data.session.expires_at * 1000 < Date.now() + 60_000) {
+    const { data: r } = await supabase.auth.refreshSession();
+    return r.session?.access_token ?? "";
+  }
   return data.session?.access_token ?? "";
 };
 

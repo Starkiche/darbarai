@@ -224,6 +224,10 @@ const form = reactive({
 
 async function getToken() {
   const { data: { session } } = await supabase.auth.getSession();
+  if (session?.expires_at && session.expires_at * 1000 < Date.now() + 60_000) {
+    const { data } = await supabase.auth.refreshSession();
+    return data.session?.access_token ?? "";
+  }
   return session?.access_token ?? "";
 }
 
