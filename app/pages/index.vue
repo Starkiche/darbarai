@@ -40,6 +40,19 @@
     </div>
   </section>
 
+  <!-- Services -->
+  <section class="py-20 bg-sand-50 px-4">
+    <div class="max-w-3xl mx-auto text-center">
+      <h2 class="section-title mb-6">{{ t("home.services_section_title") }}</h2>
+      <p class="text-stone-600 text-lg leading-relaxed mb-10">
+        {{ t("home.services_section_text") }}
+      </p>
+      <NuxtLink :to="localePath('/services')" class="btn-primary px-8 py-3 text-base">
+        {{ t("home.services_cta") }}
+      </NuxtLink>
+    </div>
+  </section>
+
   <!-- Localisation -->
   <section class="py-20 px-4 max-w-3xl mx-auto">
     <h2 class="section-title text-center mb-3">
