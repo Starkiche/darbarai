@@ -17,7 +17,7 @@
       <!-- Nav desktop -->
       <nav class="hidden md:flex items-center gap-6">
         <NuxtLink
-          :to="localePath('/riads')"
+          :to="localePath('/')"
           class="flex items-center gap-1.5 text-sm font-medium transition-colors"
           :class="
             scrolled
@@ -27,6 +27,20 @@
         >
           <svg viewBox="0 0 24 24" class="w-4 h-4 shrink-0">
             <path fill="currentColor" :d="mdiHome" />
+          </svg>
+          {{ t("nav.home") }}
+        </NuxtLink>
+        <NuxtLink
+          :to="localePath('/riads')"
+          class="flex items-center gap-1.5 text-sm font-medium transition-colors"
+          :class="
+            scrolled
+              ? 'text-stone-700 hover:text-terracotta-600'
+              : 'text-stone-900 hover:text-terracotta-600'
+          "
+        >
+          <svg viewBox="0 0 24 24" class="w-4 h-4 shrink-0">
+            <path fill="currentColor" :d="mdiBed" />
           </svg>
           {{ t("nav.riads") }}
         </NuxtLink>
@@ -58,30 +72,78 @@
           </svg>
           {{ t("nav.gallery") }}
         </NuxtLink>
+        <NuxtLink
+          :to="localePath('/boutique')"
+          class="flex items-center gap-1.5 text-sm font-medium transition-colors"
+          :class="
+            scrolled
+              ? 'text-stone-700 hover:text-terracotta-600'
+              : 'text-stone-900 hover:text-terracotta-600'
+          "
+        >
+          <svg viewBox="0 0 24 24" class="w-4 h-4 shrink-0">
+            <path fill="currentColor" :d="mdiStorefront" />
+          </svg>
+          {{ t("nav.boutique") }}
+        </NuxtLink>
+        <NuxtLink
+          :to="localePath('/contact')"
+          class="flex items-center gap-1.5 text-sm font-medium transition-colors"
+          :class="
+            scrolled
+              ? 'text-stone-700 hover:text-terracotta-600'
+              : 'text-stone-900 hover:text-terracotta-600'
+          "
+        >
+          <svg viewBox="0 0 24 24" class="w-4 h-4 shrink-0">
+            <path fill="currentColor" :d="mdiEmailOutline" />
+          </svg>
+          {{ t("nav.contact") }}
+        </NuxtLink>
       </nav>
 
       <!-- Actions -->
       <div class="flex items-center gap-3">
         <!-- Sélecteur de langue -->
-        <button
-          v-for="loc in availableLocales"
-          :key="loc"
-          class="text-xs font-medium uppercase px-2 py-1 rounded transition-colors flex items-center gap-1.5"
-          :class="[
-            locale === loc ? 'bg-terracotta-600 text-white' : '',
-            scrolled
-              ? 'text-stone-600 hover:text-terracotta-600'
-              : 'text-stone-900 hover:text-terracotta-600',
-          ]"
-          @click="setLocale(loc)"
-        >
-          <img
-            :src="`https://flagcdn.com/16x12/${localeFlagCodes[loc]}.png`"
-            :alt="loc"
-            class="w-4 rounded-sm"
-          />
-          <span>{{ loc }}</span>
-        </button>
+        <div class="relative">
+          <button
+            class="flex items-center gap-1.5 text-xs font-medium uppercase px-2 py-1 rounded transition-colors"
+            :class="scrolled ? 'text-stone-600 hover:text-terracotta-600' : 'text-stone-900 hover:text-terracotta-600'"
+            @click="langOpen = !langOpen"
+          >
+            <img
+              :src="`https://flagcdn.com/16x12/${localeFlagCodes[locale]}.png`"
+              :alt="locale"
+              class="w-4 rounded-sm"
+            />
+            <span>{{ locale }}</span>
+            <svg class="w-3 h-3 transition-transform" :class="langOpen ? 'rotate-180' : ''" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <Transition
+            enter-active-class="transition duration-100 ease-out"
+            enter-from-class="opacity-0 scale-95"
+            enter-to-class="opacity-100 scale-100"
+            leave-active-class="transition duration-75 ease-in"
+            leave-from-class="opacity-100 scale-100"
+            leave-to-class="opacity-0 scale-95"
+          >
+            <div
+              v-if="langOpen"
+              class="absolute right-0 top-full mt-1 bg-white rounded-lg shadow-lg border border-stone-100 overflow-hidden z-50"
+            >
+              <button
+                v-for="loc in availableLocales"
+                :key="loc"
+                class="flex items-center gap-2 w-full px-4 py-2 text-xs font-medium uppercase text-stone-700 hover:bg-stone-50 transition-colors"
+                :class="locale === loc ? 'text-terracotta-600' : ''"
+                @click="setLocale(loc); langOpen = false"
+              >
+                <img :src="`https://flagcdn.com/16x12/${localeFlagCodes[loc]}.png`" :alt="loc" class="w-4 rounded-sm" />
+                {{ loc }}
+              </button>
+            </div>
+          </Transition>
+        </div>
 
         <!-- Auth -->
         <template v-if="user">
@@ -176,12 +238,22 @@
       >
         <nav class="flex flex-col px-4 py-4 gap-4">
           <NuxtLink
-            :to="localePath('/riads')"
+            :to="localePath('/')"
             class="flex items-center gap-2 text-stone-700 font-medium"
             @click="mobileOpen = false"
           >
             <svg viewBox="0 0 24 24" class="w-4 h-4 shrink-0">
               <path fill="currentColor" :d="mdiHome" />
+            </svg>
+            {{ t("nav.home") }}
+          </NuxtLink>
+          <NuxtLink
+            :to="localePath('/riads')"
+            class="flex items-center gap-2 text-stone-700 font-medium"
+            @click="mobileOpen = false"
+          >
+            <svg viewBox="0 0 24 24" class="w-4 h-4 shrink-0">
+              <path fill="currentColor" :d="mdiBed" />
             </svg>
             {{ t("nav.riads") }}
           </NuxtLink>
@@ -204,6 +276,26 @@
               <path fill="currentColor" :d="mdiCamera" />
             </svg>
             {{ t("nav.gallery") }}
+          </NuxtLink>
+          <NuxtLink
+            :to="localePath('/boutique')"
+            class="flex items-center gap-2 text-stone-700 font-medium"
+            @click="mobileOpen = false"
+          >
+            <svg viewBox="0 0 24 24" class="w-4 h-4 shrink-0">
+              <path fill="currentColor" :d="mdiStorefront" />
+            </svg>
+            {{ t("nav.boutique") }}
+          </NuxtLink>
+          <NuxtLink
+            :to="localePath('/contact')"
+            class="flex items-center gap-2 text-stone-700 font-medium"
+            @click="mobileOpen = false"
+          >
+            <svg viewBox="0 0 24 24" class="w-4 h-4 shrink-0">
+              <path fill="currentColor" :d="mdiEmailOutline" />
+            </svg>
+            {{ t("nav.contact") }}
           </NuxtLink>
           <template v-if="user">
             <NuxtLink
@@ -243,7 +335,7 @@
 </template>
 
 <script setup lang="ts">
-import { mdiHome, mdiFlower, mdiCamera } from "@mdi/js";
+import { mdiHome, mdiFlower, mdiCamera, mdiBed, mdiEmailOutline, mdiStorefront } from "@mdi/js";
 
 const { t, locale, availableLocales, setLocale } = useI18n();
 const localeFlagCodes: Record<string, string> = { fr: "fr", en: "gb" };
@@ -252,6 +344,15 @@ const { user, isAdmin, signOut } = useAuth();
 
 const scrolled = ref(false);
 const mobileOpen = ref(false);
+const langOpen = ref(false);
+
+onMounted(() => {
+  const close = (e: MouseEvent) => {
+    if (!(e.target as HTMLElement).closest(".relative")) langOpen.value = false;
+  };
+  document.addEventListener("click", close);
+  onUnmounted(() => document.removeEventListener("click", close));
+});
 
 onMounted(() => {
   const onScroll = () => {

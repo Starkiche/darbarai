@@ -183,7 +183,7 @@
         <!-- Galerie groupée par pièce -->
         <section v-if="riad.gallery?.length">
           <h2 class="section-title mb-8">{{ t("riads.gallery_title") }}</h2>
-          <div v-for="(group, gi) in riad.gallery" :key="gi" class="mb-10">
+          <div v-for="(group, gi) in riad.gallery.filter(g => g.label !== 'Divers')" :key="gi" class="mb-10">
             <h3
               class="text-base font-semibold text-stone-500 uppercase tracking-wider mb-3"
             >

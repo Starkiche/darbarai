@@ -125,7 +125,7 @@ const supabase = useSupabaseClient();
 const { t } = useI18n();
 
 type View = "table" | "calendar";
-const view = ref<View>("table");
+const view = ref<View>("calendar");
 
 const page = ref(1);
 const pageSize = 20;

@@ -32,7 +32,23 @@
               @click="openModal(service)"
             >
               <div class="flex items-center gap-4">
-                <span class="text-4xl">{{ service.icon ?? "✨" }}</span>
+                <ClientOnly>
+                  <LottieIcon
+                    v-if="lottieAnimations[service.slug]"
+                    :animation-data="lottieAnimations[service.slug]"
+                    class="w-14 h-14 shrink-0"
+                  />
+                  <img
+                    v-else-if="staticImages[service.slug]"
+                    :src="staticImages[service.slug]"
+                    :alt="service.name"
+                    class="w-14 h-14 shrink-0 object-contain"
+                  />
+                  <span v-else class="text-4xl">{{ service.icon ?? "✨" }}</span>
+                  <template #fallback>
+                    <span class="text-4xl">{{ service.icon ?? "✨" }}</span>
+                  </template>
+                </ClientOnly>
                 <div>
                   <h3 class="font-serif text-xl text-stone-800">
                     {{
@@ -105,7 +121,17 @@
               <!-- Header -->
               <div class="flex items-start justify-between mb-6">
                 <div class="flex items-center gap-3">
-                  <span class="text-4xl">{{ modal.service.icon ?? "✨" }}</span>
+                  <ClientOnly>
+                    <LottieIcon
+                      v-if="modal.service && lottieAnimations[modal.service.slug]"
+                      :animation-data="lottieAnimations[modal.service.slug]"
+                      class="w-14 h-14 shrink-0"
+                    />
+                    <span v-else class="text-4xl">{{ modal.service.icon ?? "✨" }}</span>
+                    <template #fallback>
+                      <span class="text-4xl">{{ modal.service.icon ?? "✨" }}</span>
+                    </template>
+                  </ClientOnly>
                   <div>
                     <h2 class="font-serif text-2xl text-stone-800">
                       {{
@@ -308,6 +334,28 @@
 <script setup lang="ts">
 import type { Service } from "~/types";
 import type { ServiceCategoryRecord } from "~/composables/useServiceCategories";
+
+const animationFiles = import.meta.glob("~/assets/animations/*.json", {
+  eager: true,
+  import: "default",
+});
+const lottieAnimations: Record<string, object> = Object.fromEntries(
+  Object.entries(animationFiles).map(([path, data]) => {
+    const slug = path.split("/").pop()?.replace(".json", "") ?? "";
+    return [slug, data as object];
+  }),
+);
+
+const staticImageFiles = import.meta.glob(
+  "~/assets/animations/*.{jpg,jpeg,png,svg,webp}",
+  { eager: true, import: "default" },
+);
+const staticImages: Record<string, string> = Object.fromEntries(
+  Object.entries(staticImageFiles).map(([path, url]) => {
+    const slug = path.split("/").pop()?.replace(/\.[^.]+$/, "") ?? "";
+    return [slug, url as string];
+  }),
+);
 
 const { t, locale } = useI18n();
 const { fetchServices } = useServices();

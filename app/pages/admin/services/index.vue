@@ -285,6 +285,7 @@
         <div class="flex-1 min-w-0">
           <div class="font-medium text-stone-800 flex items-center gap-2">
             {{ service.name }}
+            <span class="text-xs font-mono text-stone-400">{{ service.slug }}</span>
             <span
               class="text-xs px-2 py-0.5 rounded-full bg-stone-100 text-stone-500"
             >
@@ -312,6 +313,19 @@
           }}
         </div>
         <div class="flex items-center gap-2 shrink-0">
+          <!-- Toggle en avant -->
+          <button
+            class="text-xs px-2 py-1 rounded border transition-colors"
+            :class="
+              service.featured
+                ? 'border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100'
+                : 'border-stone-200 text-stone-400 hover:border-amber-300 hover:text-amber-600'
+            "
+            :title="service.featured ? 'Retirer de la page d\'accueil' : 'Mettre en avant sur la page d\'accueil'"
+            @click="toggleFeatured(service)"
+          >
+            {{ service.featured ? "★ En avant" : "☆ Mettre en avant" }}
+          </button>
           <!-- Toggle actif -->
           <button
             class="text-xs px-2 py-1 rounded border transition-colors"
@@ -450,6 +464,7 @@ const emptyForm = () => ({
   icon: null as string | null,
   category: "other" as ServiceCategory,
   active: true,
+  featured: false,
   sort_order: allServices.value.length,
 });
 
@@ -549,6 +564,11 @@ const onPhotoUpload = async (e: Event) => {
 
 const toggleActive = async (service: Service) => {
   await updateService(service.id, { active: !service.active });
+  await loadServices();
+};
+
+const toggleFeatured = async (service: Service) => {
+  await updateService(service.id, { featured: !service.featured });
   await loadServices();
 };
 

@@ -19,6 +19,7 @@ export interface Service {
   icon: string | null; // emoji
   category: ServiceCategory;
   active: boolean;
+  featured: boolean;
   sort_order: number;
   created_at: string;
 }
@@ -169,4 +170,19 @@ export interface PaginatedResponse<T> {
 export interface CheckoutSession {
   sessionId: string;
   url: string;
+}
+
+// --- Boutique --------------------------------------------------
+export interface Product {
+  id: string;
+  name: string;
+  name_en: string | null;
+  description: string | null;
+  description_en: string | null;
+  price_cents: number | null; // null = sur demande
+  sizes: string[];
+  images: string[];
+  active: boolean;
+  sort_order: number;
+  created_at: string;
 }

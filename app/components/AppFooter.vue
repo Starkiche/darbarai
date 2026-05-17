@@ -8,6 +8,18 @@
           <p class="text-sm text-stone-400 leading-relaxed">
             {{ t("footer.tagline") }}
           </p>
+          <div class="flex items-center gap-4 mt-2">
+            <img
+              src="/images/logo_dar_barai.jpg"
+              alt="Dar Baraï"
+              class="h-20 w-auto rounded-lg"
+            />
+            <img
+              src="/images/logo_dar_tanawi.jpg"
+              alt="Dar Tanawi"
+              class="h-20 w-auto rounded-lg"
+            />
+          </div>
         </div>
 
         <!-- Liens -->
@@ -37,14 +49,24 @@
                 >{{ t("nav.book") }}</NuxtLink
               >
             </li>
+            <li>
+              <NuxtLink
+                :to="localePath('/about')"
+                class="hover:text-terracotta-400 transition-colors"
+                >{{ t("footer.about") }}</NuxtLink
+              >
+            </li>
           </ul>
         </div>
 
         <!-- Contact -->
         <div>
-          <p class="text-white font-medium mb-4">
+          <NuxtLink
+            :to="localePath('/contact')"
+            class="text-white font-medium mb-4 hover:text-terracotta-400 transition-colors block"
+          >
             {{ t("footer.contact_title") }}
-          </p>
+          </NuxtLink>
           <ul class="space-y-2 text-sm">
             <li class="flex items-center gap-2">
               <svg
